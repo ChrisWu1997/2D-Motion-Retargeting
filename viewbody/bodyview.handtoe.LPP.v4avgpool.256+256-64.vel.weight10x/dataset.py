@@ -19,8 +19,8 @@ VIEW_RANGES = [(0, 0, -np.pi / 2),
                (0, 0, np.pi / 6),
                (0, 0, np.pi / 3),
                (0, 0, np.pi / 2)]
-MEAN_POSE_PATH = os.path.join(DATA_ROOT, 'meanpose_bodyview_7view-gtvLPP-noroot.npy')
-STD_POSE_PATH = os.path.join(DATA_ROOT, 'stdpose_bodyview_7view-gtvLPP-noroot.npy')
+MEAN_POSE_PATH = os.path.join('./model/meanpose_bodyview_7view-gtvLPP-noroot.npy')
+STD_POSE_PATH = os.path.join('./model/stdpose_bodyview_7view-gtvLPP-noroot.npy')
 FAILED_MOTIONS_PATH = os.path.join(DATA_ROOT, 'handtoe_7view_failed.npy')
 
 
