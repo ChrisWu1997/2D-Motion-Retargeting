@@ -6,7 +6,7 @@ import argparse
 import json
 import torch.nn.functional as F
 from tqdm import tqdm
-from visulization import pose2im_all, joints2image
+from visualization import pose2im_all, joints2image
 import cv2
 import imageio
 from dataset import MEAN_POSE, STD_POSE

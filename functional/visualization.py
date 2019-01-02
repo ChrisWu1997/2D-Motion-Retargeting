@@ -25,8 +25,10 @@ def two_pts_to_rectangle(point1, point2):
     p4 = (   int(point2[0] - length*math.cos(math.radians(beta)))    ,   int(point2[1] - length*math.sin(math.radians(beta)))   )
     return [p1,p2,p3,p4]
 
+
 def rgb2rgba(color):
     return (color[0], color[1], color[2], 255)
+
 
 def hex2rgb(hex, number_of_colors=3):
     h = hex
@@ -39,6 +41,7 @@ def hex2rgb(hex, number_of_colors=3):
         h = h[6:]
 
     return rgb
+
 
 def joints2image(joints_position, colors, transparency=False, H=512, W=512, imtype=np.uint8):
 
@@ -109,7 +112,75 @@ def joints2image(joints_position, colors, transparency=False, H=512, W=512, imty
 
     return [canvas.astype(imtype), canvas_cropped.astype(imtype)]
 
+
 def bounding_box(img):
     a = np.where(img != 0)
     bbox = np.min(a[0]), np.max(a[0]), np.min(a[1]), np.max(a[1])
     return bbox
+
+
+def pose2im_all(all_peaks, H=512, W=512):
+    limbSeq = [[1, 2], [2, 3], [3, 4],                       # right arm
+               [1, 5], [5, 6], [6, 7],                       # left arm
+               [8, 9], [9, 10], [10, 11],                    # right leg
+               [8, 12], [12, 13], [13, 14],                  # left leg
+               [1, 0],                                       # head/neck
+               [1, 8],                                       # body,
+               [0, 15], #[15, 17],                            # head-eye
+               [0, 16], #[16, 18],                            # eye-ear
+               ]
+
+    limb_colors = [[0, 60, 255], [0, 120, 255], [0, 180, 255],
+                    [180, 255, 0], [120, 255, 0], [60, 255, 0],
+                    [170, 255, 0], [85, 255, 0], [0, 255, 0],
+                    [255, 170, 0], [255, 85, 0], [255, 0, 0],
+                    [0, 85, 255],
+                    [0, 0, 255],
+                    [240, 32, 160], #[139, 26, 85],
+                    [0, 127, 255], #[0, 102, 205],
+                   ]
+
+    joint_colors = [[85, 0, 255], [0, 0, 255], [0, 60, 255], [0, 120, 255], [0, 180, 255],
+                    [180, 255, 0], [120, 255, 0], [60, 255, 0], [0, 0, 255],
+                    [170, 255, 0], [85, 255, 0], [0, 255, 0],
+                    [255, 170, 0], [255, 85, 0], [255, 0, 0],
+                    [211, 0, 148], [0, 165, 255],
+                    #[226, 43, 138], [0, 133, 205],
+                    ]
+
+    image = pose2im(all_peaks, limbSeq, limb_colors, joint_colors, H, W)
+    return image
+
+
+def pose2im(all_peaks, limbSeq, limb_colors, joint_colors, H, W, _circle=True, _limb=True, imtype=np.uint8):
+    canvas = np.zeros(shape=(H, W, 3))
+    canvas.fill(255)
+
+    if _circle:
+        for i in range(len(joint_colors)):
+            cv2.circle(canvas, (int(all_peaks[i][0]), int(all_peaks[i][1])), 2, joint_colors[i], thickness=2)
+
+    if _limb:
+        stickwidth = 2
+
+        for i in range(len(limbSeq)):
+            limb = limbSeq[i]
+            cur_canvas = canvas.copy()
+            point1_index = limb[0]
+            point2_index = limb[1]
+
+            if len(all_peaks[point1_index]) > 0 and len(all_peaks[point2_index]) > 0:
+                point1 = all_peaks[point1_index][0:2]
+                point2 = all_peaks[point2_index][0:2]
+                X = [point1[1], point2[1]]
+                Y = [point1[0], point2[0]]
+                mX = np.mean(X)
+                mY = np.mean(Y)
+                # cv2.line()
+                length = ((X[0] - X[1]) ** 2 + (Y[0] - Y[1]) ** 2) ** 0.5
+                angle = math.degrees(math.atan2(X[0] - X[1], Y[0] - Y[1]))
+                polygon = cv2.ellipse2Poly((int(mY), int(mX)), (int(length / 2), stickwidth), int(angle), 0, 360, 1)
+                cv2.fillConvexPoly(cur_canvas, polygon, limb_colors[i])
+                canvas = cv2.addWeighted(canvas, 0.4, cur_canvas, 0.6, 0)
+
+    return canvas.astype(imtype)

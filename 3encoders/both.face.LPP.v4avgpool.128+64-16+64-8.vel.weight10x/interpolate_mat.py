@@ -1,3 +1,5 @@
+import sys
+sys.path.append('../../functional')
 import os
 import warnings
 from common import config
@@ -7,7 +9,7 @@ import argparse
 import json
 from tqdm import tqdm
 warnings.filterwarnings("ignore")
-from visulization import joints2image
+from visualization import joints2image
 import cv2
 import imageio
 from dataset import MEAN_POSE, STD_POSE

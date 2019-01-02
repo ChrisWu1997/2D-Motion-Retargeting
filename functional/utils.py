@@ -173,7 +173,7 @@ def motion2json(motion, h, w, save_dir):
         with open(path, 'w') as f:
             json.dump(out_dict, f)
 
-def motion2openpose(motion, h, w, save_dir):
+def motion2openpose(motion, h, w, save_dir, is_hand=True):
     """
 
     :param motion: (NR_JOINTS, 2, NR_FRAMES)
@@ -182,10 +182,13 @@ def motion2openpose(motion, h, w, save_dir):
     :param save_dir:
     :return:
     """
-    pose_idx = [0, 1, 2, 3, 4, 5, 6, 7, 8,
+    if is_hand:
+        pose_idx = [0, 1, 2, 3, 4, 5, 6, 7, 8,
                 9, 10, 11, 22, 12, 13, 14, 19,
                 15, 16]
-    hand_idx = [1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 16, 17, 18, 20]
+        hand_idx = [1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 16, 17, 18, 20]
+    else: # basic pose + two eyes
+        pose_idx = np.arange(17)
     nr_frames = motion.shape[-1]
     for i in range(nr_frames):
         path = os.path.join(save_dir, "%04d_keypoints.json" % i)
@@ -193,17 +196,18 @@ def motion2openpose(motion, h, w, save_dir):
                     "people":[{"pose_keypoints_2d":[0] * 66, "face_keypoints_2d":[],
                                "hand_left_keypoints_2d":[0] * 45, "hand_right_keypoints_2d":[0] * 45}]}
         pose_joints = np.zeros((25, 3))
-        pose_joints[pose_idx, :2] = motion[:19, :, i]
-        rhand_joints = np.zeros((21, 3))
-        rhand_joints[hand_idx, :2] = motion[19:34, :, i]
-        lhand_joints = np.zeros((21, 3))
-        lhand_joints[hand_idx, :2] = motion[34:49, :, i]
+        pose_joints[pose_idx, :2] = motion[:len(pose_idx), :, i]
         out_dict['people'][0]['pose_keypoints_2d'] = pose_joints.reshape(-1).tolist()
-        out_dict['people'][0]['hand_right_keypoints_2d'] = rhand_joints.reshape(-1).tolist()
-        out_dict['people'][0]['hand_left_keypoints_2d'] = lhand_joints.reshape(-1).tolist()
+        if is_hand:
+            rhand_joints = np.zeros((21, 3))
+            rhand_joints[hand_idx, :2] = motion[19:34, :, i]
+            lhand_joints = np.zeros((21, 3))
+            lhand_joints[hand_idx, :2] = motion[34:49, :, i]
+            out_dict['people'][0]['hand_right_keypoints_2d'] = rhand_joints.reshape(-1).tolist()
+            out_dict['people'][0]['hand_left_keypoints_2d'] = lhand_joints.reshape(-1).tolist()
+
         with open(path, 'w') as f:
             json.dump(out_dict, f)
-
 
 
 def test():

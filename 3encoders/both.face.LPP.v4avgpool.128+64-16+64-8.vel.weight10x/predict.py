@@ -7,7 +7,7 @@ import argparse
 import json
 from tqdm import tqdm
 warnings.filterwarnings("ignore")
-from visulization import pose2im_all, trans_motion_inv, joints2image
+from visualization import pose2im_all, trans_motion_inv, joints2image
 import cv2
 import imageio
 from dataset import MEAN_POSE, STD_POSE
