@@ -6,7 +6,7 @@ import argparse
 import json
 import torch.nn.functional as F
 from tqdm import tqdm
-from visualization import pose2im_all, joints2image
+from visualization import pose2im_all, joints2image, hex2rgb
 import cv2
 import imageio
 from dataset import MEAN_POSE, STD_POSE
@@ -39,10 +39,10 @@ def get_data(json_dir, is_mixamo, scale=1.0):
     return data
 
 
-def motion2video(motion, h, w, save_path, name, colors, transparency=False, motion_tgt=None, fps=25):
-    videowriter = imageio.get_writer(os.path.join(save_path, name + '.mp4'), fps=fps)
+def motion2video(motion, h, w, save_path, colors, transparency=False, motion_tgt=None, fps=25):
+    videowriter = imageio.get_writer(os.path.join(save_path, 'video.mp4'), fps=fps)
     vlen = motion.shape[-1]
-    frames_dir = os.path.join(save_path, 'frames-' + name)
+    frames_dir = os.path.join(save_path)
     ensure_dir(frames_dir)
     for i in tqdm(range(vlen)):
         [img, img_cropped] = joints2image(motion[:, :, i], colors, transparency, H=h, W=w)
@@ -76,8 +76,8 @@ if __name__ == '__main__':
     parser.add_argument('--fps2', type=float)
     parser.add_argument("--mixamo1", help='if v1 belongs to mixamo', action="store_true")
     parser.add_argument("--mixamo2", help='if v2 belongs to mixamo', action="store_true")
-    parser.add_argument('--color1', type=str, default='#ff0000##aa0000#550000', help='color1')
-    parser.add_argument('--color2', type=str, default='#0000ff#0000aa#000055', help='color2')
+    parser.add_argument('--color1', type=str, default='#a50b69#b73b87#db9dc3', help='color1')
+    parser.add_argument('--color2', type=str, default='#4076e0#40a7e0#40d7e0', help='color2')
     parser.add_argument('--smooth', action='store_true',
                         help="to smooth the output using gaussian kernel")
     parser.add_argument('--transparency', action='store_true',
@@ -123,6 +123,7 @@ if __name__ == '__main__':
     input1 = input1[:, :, :vlen]
     input2 = input2[:, :, :vlen]
 
+    print("input1.size(): ", input1.size())
     out12 = net.transfer(input1, input2)
     out21 = net.transfer(input2, input1)
 
@@ -152,25 +153,35 @@ if __name__ == '__main__':
 
     if args.write_json is not None:
         ensure_dir(args.write_json)
-        out1_dir = os.path.join(args.write_json, 'point-input1')
-        out2_dir = os.path.join(args.write_json, 'point-input2')
-        out12_dir = os.path.join(args.write_json, 'point-output12')
-        out21_dir = os.path.join(args.write_json, 'point-output21')
+        out1_dir = os.path.join(args.write_json, 'input1', 'point-original')
+        out2_dir = os.path.join(args.write_json, 'input2', 'point-original')
+        out12_dir = os.path.join(args.write_json, 'output12', 'point-original')
+        out21_dir = os.path.join(args.write_json, 'output21', 'point-original')
         ensure_dir(out1_dir)
         ensure_dir(out2_dir)
         ensure_dir(out12_dir)
         ensure_dir(out21_dir)
-        motion2json(input1, h1, w1, out1_dir)
-        motion2json(input2, h2, w2, out2_dir)
-        motion2json(out12, h2, w2, out12_dir)
-        motion2json(out21, h1, w1, out21_dir)
+        motion2openpose(input1, h1, w1, out1_dir)
+        motion2openpose(input2, h2, w2, out2_dir)
+        motion2openpose(out12, h2, w2, out12_dir)
+        motion2openpose(out21, h1, w1, out21_dir)
 
         print('Json files are writen.')
 
     if args.save_dir is not None or args.write_json is not None:
         save_dir = args.write_json if args.write_json is not None else args.save_dir
         ensure_dir(save_dir)
-        motion2video(input1, h1, w1, save_dir, 'input1', args.color1, args.transparency, fps=args.fps1)
-        motion2video(input2, h2, w2, save_dir, 'input2', args.color2, args.transparency, fps=args.fps2)
-        motion2video(out12, h2, w2, save_dir, 'output12', args.color2, args.transparency, fps=args.fps1)
-        motion2video(out21, h1, w1, save_dir, 'output21', args.color1, args.transparency, fps=args.fps2)
+        color1 = hex2rgb(args.color1)
+        color2 = hex2rgb(args.color2)
+        out1_dir_vid = os.path.join(args.write_json, 'input1', 'skeleton-original')
+        out2_dir_vid = os.path.join(args.write_json, 'input2', 'skeleton-original')
+        out12_dir_vid = os.path.join(args.write_json, 'output12', 'skeleton-original')
+        out21_dir_vid = os.path.join(args.write_json, 'output21', 'skeleton-original')
+        ensure_dir(out1_dir_vid)
+        ensure_dir(out2_dir_vid)
+        ensure_dir(out12_dir_vid)
+        ensure_dir(out21_dir_vid)
+        motion2video(input1, h1, w1, out1_dir_vid, color1, args.transparency, fps=args.fps1)
+        motion2video(input2, h2, w2, out2_dir_vid, color2, args.transparency, fps=args.fps2)
+        motion2video(out12, h2, w2, out12_dir_vid, color2, args.transparency, fps=args.fps1)
+        motion2video(out21, h1, w1, out21_dir_vid, color1, args.transparency, fps=args.fps2)
