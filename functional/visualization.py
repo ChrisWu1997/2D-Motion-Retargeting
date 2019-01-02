@@ -49,7 +49,6 @@ def joints2image(joints_position, colors, transparency=False, H=512, W=512, imty
                [8, 9], [8, 13], [9, 10], [10, 11], [11, 12], [13, 14], [14, 15], [15, 16],
                [0, 17], [0, 18]]
 
-    colors = hex2rgb(colors)
     L = rgb2rgba(colors[0]) if transparency else colors[0]
     M = rgb2rgba(colors[1]) if transparency else colors[1]
     R = rgb2rgba(colors[2]) if transparency else colors[2]

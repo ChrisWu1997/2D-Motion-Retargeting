@@ -16,7 +16,7 @@ from dataset import MEAN_POSE, STD_POSE
 from motion import *
 from scipy.ndimage import gaussian_filter1d
 import json
-from utils import ensure_dir
+from utils import ensure_dir, save_image, motion2openpose
 
 
 # used for openpose format
@@ -115,6 +115,20 @@ def motion2json(motion, h, w, save_dir):
         with open(path, 'w') as f:
             json.dump(out_dict, f)
 
+def motion2video(motion, h, w, save_path, colors, transparency=False, motion_tgt=None, fps=25, length=None):
+    videowriter = imageio.get_writer(os.path.join(save_path, 'video.mp4'), fps=fps)
+    vlen = motion.shape[-1]
+    frames_dir = os.path.join(save_path)
+    ensure_dir(frames_dir)
+    for i in tqdm(range(vlen)):
+        [img, img_cropped] = joints2image(motion[:, :, i], colors, transparency, H=h, W=w)
+        if motion_tgt is not None:
+            [img_tgt, img_tgt_cropped] = joints2image(motion_tgt[:, :, i], colors, H=h, W=w)
+            img = cv2.addWeighted(img_tgt, 0.3, img, 0.7, 0)
+        save_image(img_cropped, os.path.join(frames_dir, "%04d.png" % i))
+        videowriter.append_data(img)
+    videowriter.close()
+
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
@@ -125,6 +139,8 @@ if __name__=='__main__':
     parser.add_argument('-h2', '--img2_height', type=int)
     parser.add_argument('-w1', '--img1_width', type=int)
     parser.add_argument('-w2', '--img2_width', type=int)
+    parser.add_argument('--fps1', type=float, default=25)
+    parser.add_argument('--fps2', type=float, default=25)
     parser.add_argument('--color1', type=str, default='#ff0000##aa0000#550000', help='color1')
     parser.add_argument('--color2', type=str, default='#0000ff#0000aa#000055', help='color2')
     parser.add_argument('-ch', '--cell_height', type=int, default=128,
@@ -137,6 +153,8 @@ if __name__=='__main__':
                         help='which form of output')
     parser.add_argument('--nr_sample', type=int, default=8,
                         help='how many samples to interpolate')
+    parser.add_argument('--transparency', action='store_true',
+                        help="make background transparent in resulting frames")
     parser.add_argument('--use_tgt_vel', action='store_true',
                         help="to use the second input's velocity for output results if set")
     parser.add_argument('-o', '--out_path', type=str,
@@ -220,8 +238,10 @@ if __name__=='__main__':
                           for i in range(out12.shape[0])]
 
     # uncomment this to get back input1 and input2
-    #input1 = trans_motion_inv(normalize_motion_inv(input1, MEAN_POSE, STD_POSE))
-    #input2 = trans_motion_inv(normalize_motion_inv(input2, MEAN_POSE, STD_POSE))
+    # input1 = trans_motion_inv(normalize_motion_inv(input1, MEAN_POSE, STD_POSE))
+    # input2 = trans_motion_inv(normalize_motion_inv(input2, MEAN_POSE, STD_POSE))
+    input1 = trans_motion_inv(input1)
+    input2 = trans_motion_inv(input2)
 
 
     # each cell's position
@@ -233,75 +253,27 @@ if __name__=='__main__':
     # write json
     if args.write_json is not None:
         ensure_dir(args.write_json)
-        out1_dir_json = os.path.join(args.write_json, 'json/point-input1')
-        out2_dir_json = os.path.join(args.write_json, 'json/point-input2')
-        out1_dir_vid = os.path.join(args.write_json, 'frames/point-input2')
-        out2_dir_vid = os.path.join(args.write_json, 'frames/point-input2')
+        out1_dir_json = os.path.join(args.write_json, 'point-input1','point-original')
+        out2_dir_json = os.path.join(args.write_json, 'point-input2','point-original')
+        out1_dir_vid = os.path.join(args.write_json, 'point-input1','skeleton-original')
+        out2_dir_vid = os.path.join(args.write_json, 'point-input2','skeleton-original')
         ensure_dir(out1_dir_json)
         ensure_dir(out2_dir_json)
         ensure_dir(out1_dir_vid)
         ensure_dir(out2_dir_vid)
-        motion2json(input1, h1, w1, out1_dir_json)
-        motion2json(input2, h2, w2, out2_dir_json)
+        motion2openpose(input1, h1, w1, out1_dir_json)
+        motion2openpose(input2, h2, w2, out2_dir_json)
+        color1 = hex2rgb(args.color1)
+        color2 = hex2rgb(args.color1) if args.mode is 'body' else hex2rgb(args.color2)
+        motion2video(input1, h1, w1, out1_dir_vid, color1, args.transparency, fps=args.fps1)
+        motion2video(input2, h2, w2, out2_dir_vid, color2, args.transparency, fps=args.fps2)
 
         for i, motion in enumerate(interp_motions):
-            out_dir_json = os.path.join(args.write_json, 'json/point-{}'.format(position[i]))
-            out_dir_frames = os.path.join(args.write_json, 'frames/point-{}'.format(position[i]))
-            ensure_dir(out_dir)
+            out_dir_json = os.path.join(args.write_json, 'point-{}'.format(position[i]), 'point-original')
+            out_dir_frames = os.path.join(args.write_json, 'point-{}'.format(position[i]), 'skeleton-original')
+            ensure_dir(out_dir_json)
             ensure_dir(out_dir_frames)
             motion2json(motion, h2, w2, out_dir_json)
-            color = interpolate_color(color1_rgb, color2_rgb, alpha)
-            for i in tqdm(range(vlen)):
-                img = joints2image(motion[:, :, i], color, H=h2, W=w2)
+            color = interpolate_color(color2, color1, (i+1)/(len(interp_motions)+1))
+            motion2video(motion, h2, w2, out_dir_frames, color, args.transparency, fps=args.fps2)
         print('Json files are writen.')
-
-    # write video
-
-    if out_path is not None:
-        print('generating video...')
-        cell_height = args.cell_height
-        cell_width = pad_to_16x(int(w2 * cell_height / h2))
-        vlen = min(input1.shape[-1], input2.shape[-1])
-        color1 = hex2rgb(args.color1)
-        color2 = hex2rgb(args.color2)
-
-        for j, motion in enumerate(interp_motions):
-            out_path = os.path.join(args.write_json, 'interpolation.mp4') if args.write_json is not None else args.out_path
-            videowriter = imageio.get_writer(out_path, fps=25)
-            color = interpolate_color(color1, color2, j/len(interp_motions))
-            for i in tqdm(range(vlen)):
-            img_iterps = []
-                img = joints2image(motion[:, :, i], color, H=h2, W=w2)
-
-                cv2.putText(img, position[j], (40, 40), 1, 3, (0, 0, 255), 1)
-                img = cv2.resize(img, (cell_width, cell_height))
-                img_iterps.append(img)
-
-            if args.form == 'line':
-                whole_img = np.concatenate(img_iterps, axis=1)
-            else:
-                img_rows = [np.concatenate(img_iterps[j * nr_sample: (j + 1) * nr_sample], axis=1)
-                            for j in range(nr_sample)]
-                whole_img = np.concatenate(img_rows, axis=0)
-            videowriter.append_data(whole_img)
-        videowriter.close()
-        print('Video is written.')
-
-        # for i in tqdm(range(vlen)):
-        #     img_iterps = []
-        #     for j, motion in enumerate(interp_motions):
-        #         img = joints2image(motion[:, :, i], H=h2, W=w2)
-        #
-        #         cv2.putText(img, position[j], (40, 40), 1, 3, (0, 0, 255), 1)
-        #         img = cv2.resize(img, (cell_width, cell_height))
-        #         img_iterps.append(img)
-        #
-        #     if args.form == 'line':
-        #         whole_img = np.concatenate(img_iterps, axis=1)
-        #     else:
-        #         img_rows = [np.concatenate(img_iterps[j * nr_sample: (j + 1) * nr_sample], axis=1)
-        #                     for j in range(nr_sample)]
-        #         whole_img = np.concatenate(img_rows, axis=0)
-        #     videowriter.append_data(whole_img)
-        # videowriter.close()
-        # print('Video is written.')
