@@ -13,7 +13,7 @@ from dataset import MEAN_POSE, STD_POSE
 from motion import normalize_motion, normalize_motion_inv, trans_motion_inv, trans_motion2d, json2motion, trans_motion
 from scipy.ndimage import gaussian_filter1d
 import time
-from utils import ensure_dir
+from utils import ensure_dir, motion2openpose
 from utils import save_image
 
 
@@ -139,8 +139,8 @@ if __name__ == '__main__':
         out12 = trans_motion_inv(out12, w2 // 2, h2 // 2, input1[-1].copy())
         out21 = trans_motion_inv(out21, w1 // 2, h1 // 2, input2[-1].copy())
     else:
-        out12 = trans_motion_inv(normalize_motion_inv(out12, MEAN_POSE, STD_POSE), w2 // 2, h2 // 2)
-        out21 = trans_motion_inv(normalize_motion_inv(out21, MEAN_POSE, STD_POSE), w1 // 2, h1 // 2)
+        out12 = trans_motion_inv(out12, w2 // 2, h2 // 2)
+        out21 = trans_motion_inv(out21, w1 // 2, h1 // 2)
     input1 = trans_motion_inv(input1, w1 // 2, h1 // 2)
     input2 = trans_motion_inv(input2, w2 // 2, h2 // 2)
 
