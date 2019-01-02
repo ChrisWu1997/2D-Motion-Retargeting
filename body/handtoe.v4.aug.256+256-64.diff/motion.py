@@ -65,12 +65,12 @@ pose_idx = [0, 1,  2, 3, 4,  5, 6, 7,  8,
 hand_idx = [1, 2, 4,  5, 6, 8,  9, 10, 12,  13, 14, 16,  17, 18, 20]
 
 
-def json2motion(json_dir, scale=1.0, is_mixamo=False, smooth=True):
+def json2motion(json_dir, scale=1.0, is_mixamo=False, smooth=True, length=float('inf')):
     json_files = sorted(os.listdir(json_dir))
     json_files = [os.path.join(json_dir, x) for x in json_files]
 
     motion = []
-    for path in json_files:
+    for i, path in enumerate(json_files):
         with open(path) as f:
             jointDict = json.load(f)
             if is_mixamo:
@@ -89,7 +89,8 @@ def json2motion(json_dir, scale=1.0, is_mixamo=False, smooth=True):
                 if len(motion) > 0:
                     joint[np.where(joint == 0)] = motion[-1][np.where(joint == 0)]
             motion.append(joint)
-
+        if i == (length-1):
+            break
     motion = np.stack(motion, axis=2)
     if smooth:
         motion = gaussian_filter1d(motion, sigma=2, axis=-1)

@@ -17,7 +17,7 @@ from utils import ensure_dir, motion2openpose
 from utils import save_image
 
 
-def get_data(json_dir, is_mixamo, scale=1.0):
+def get_data(json_dir, is_mixamo, scale=1.0, length=float('inf')):
     def preprocessing(motion):
         if is_mixamo:
             motion_proj = trans_motion(motion)
@@ -31,7 +31,7 @@ def get_data(json_dir, is_mixamo, scale=1.0):
 
         return motion_proj
 
-    motion = json2motion(json_dir, scale, is_mixamo=is_mixamo)
+    motion = json2motion(json_dir, scale, is_mixamo=is_mixamo, length=length)
     #motion = motion * scale
     motion_input = preprocessing(motion)
 
@@ -74,6 +74,8 @@ if __name__ == '__main__':
     parser.add_argument('-w2', '--img2_width', type=int)
     parser.add_argument('--fps1', type=float)
     parser.add_argument('--fps2', type=float)
+    parser.add_argument('--length1', type=int, default=float('inf'))
+    parser.add_argument('--length2', type=int, default=float('inf'))
     parser.add_argument("--mixamo1", help='if v1 belongs to mixamo', action="store_true")
     parser.add_argument("--mixamo2", help='if v2 belongs to mixamo', action="store_true")
     parser.add_argument('--color1', type=str, default='#a50b69#b73b87#db9dc3', help='color1')
@@ -86,6 +88,10 @@ if __name__ == '__main__':
                         help='maximum input video length')
     parser.add_argument('--use_tgt_vel', action='store_true',
                         help="to use the target input's velocity(difference) for output results if set")
+    parser.add_argument('--output_similar_length', action='store_true',
+                        help="make both outputs in the same size")
+    parser.add_argument('--crop_to_square', action='store_true',
+                        help="will save the video and the skeleton in a 512x512 square")
     parser.add_argument('-o', '--save_dir', type=str,
                         help='the folder folder to write the output videos')
     parser.add_argument('--write_json', type=str,
@@ -112,16 +118,17 @@ if __name__ == '__main__':
     net = torch.load(args.network)['net'].to(device)
     net.eval()
 
-    data1 = get_data(args.vid1_json_dir, args.mixamo1, scale1)
-    data2 = get_data(args.vid2_json_dir, args.mixamo2, scale2)
+    data1 = get_data(args.vid1_json_dir, args.mixamo1, scale1, args.length1)
+    data2 = get_data(args.vid2_json_dir, args.mixamo2, scale2, args.length2)
 
     since = time.time()
 
     input1 = data1['input'].to(device)
     input2 = data2['input'].to(device)
-    vlen = min(input1.shape[-1], input2.shape[-1], args.max_length) // 16 * 16
-    input1 = input1[:, :, :vlen]
-    input2 = input2[:, :, :vlen]
+    if args.output_similar_length:
+        vlen = min(input1.shape[-1], input2.shape[-1], args.max_length) // 16 * 16
+        input1 = input1[:, :, :vlen]
+        input2 = input2[:, :, :vlen]
 
     print("input1.size(): ", input1.size())
     out12 = net.transfer(input1, input2)
@@ -136,6 +143,10 @@ if __name__ == '__main__':
     input2 = normalize_motion_inv(input2, MEAN_POSE, STD_POSE)
     out12 = normalize_motion_inv(out12, MEAN_POSE, STD_POSE)
     out21 = normalize_motion_inv(out21, MEAN_POSE, STD_POSE)
+
+    if args.crop_to_square:
+        h1 = h2 = w1 = w2 = 512
+
     if args.use_tgt_vel:
         out12 = trans_motion_inv(out12, w2 // 2, h2 // 2, input1[-1].copy())
         out21 = trans_motion_inv(out21, w1 // 2, h1 // 2, input2[-1].copy())
@@ -152,6 +163,7 @@ if __name__ == '__main__':
     total_time = time.time() - since
 
     if args.write_json is not None:
+
         ensure_dir(args.write_json)
         out1_dir = os.path.join(args.write_json, 'input1', 'point-original')
         out2_dir = os.path.join(args.write_json, 'input2', 'point-original')
