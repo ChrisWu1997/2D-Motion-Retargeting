@@ -139,8 +139,11 @@ def motion2video(motion, h, w, save_path, colors, transparency=False, motion_tgt
         [img, img_cropped] = joints2image(motion[:, :, i], colors, transparency, H=h, W=w, nr_joints=nr_joints)
         if motion_tgt is not None:
             [img_tgt, img_tgt_cropped] = joints2image(motion_tgt[:, :, i], colors, transparency, H=h, W=w, nr_joints=nr_joints)
-            img = cv2.addWeighted(img_tgt, 0.3, img, 0.7, 0)
-            img_cropped = cv2.addWeighted(img_tgt, 0.3, img, 0.7, 0)
+            img_ori = img.copy()
+            img = cv2.addWeighted(img_tgt, 0.3, img_ori, 0.7, 0)
+            img_cropped = cv2.addWeighted(img_tgt, 0.3, img_ori, 0.7, 0)
+            bb = bounding_box(img_cropped)
+            img_cropped = img_cropped[:, bb[2]:bb[3], :]
         save_image(img_cropped, os.path.join(frames_dir, "%04d.png" % i))
         videowriter.append_data(img)
     videowriter.close()
