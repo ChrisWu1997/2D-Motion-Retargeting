@@ -176,13 +176,19 @@ class AutoEncoder(nn.Module):
 
         return out12
 
+    def transfer_three(self, x1, x2, x3):
+        m1 = self.mot_encoder(x1)
+        b2 = self.body_encoder(x2[:, :-2, :]).repeat(1, 1, m1.shape[-1])
+        v3 = self.view_encoder(x3[:, :-2, :]).repeat(1, 1, m1.shape[-1])
+
+        out = self.decoder(torch.cat([m1, b2, v3], dim=1))
+
+        return out
+
     def forward(self, x):
         m = self.mot_encoder(x)
         b = self.body_encoder(x[:, :-2, :]).repeat(1, 1, m.shape[-1])
         v = self.view_encoder(x[:, :-2, :]).repeat(1, 1, m.shape[-1])
-        print('m', m.shape)
-        print('b', b.shape)
-        print('v', v.shape)
         d = torch.cat([m, b, v], dim=1)
         d = self.decoder(d)
         return d
