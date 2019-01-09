@@ -73,7 +73,7 @@ def normalize_motion_inv(motion, mean_pose, std_pose):
     return motion * std_pose[:, :, np.newaxis] + mean_pose[:, :, np.newaxis]
 
 
-def json2motion(json_list, is_mixamo=False, person=0):
+def json2motion(json_list, is_mixamo=False, person=0, filp=False):
     mot = []
     for filename in json_list:
         with open(filename) as f:
@@ -93,7 +93,11 @@ def json2motion(json_list, is_mixamo=False, person=0):
                             # print("not temporal coherent")
                             min_diff = cur_diff
                             mark_idx = j
-                    joint = np.array(joint['people'][mark_idx]['pose_keypoints_2d']).reshape((-1, 3))[:15, :2]
+                    if nr_people == 0:
+                        print('copy last frame joint')
+                        joint = mot[-1].copy()
+                    else:
+                        joint = np.array(joint['people'][mark_idx]['pose_keypoints_2d']).reshape((-1, 3))[:15, :2]
                 else:
                     joint = np.array(joint['people'][person]['pose_keypoints_2d']).reshape((-1, 3))[:15, :2]
             mot.append(joint)

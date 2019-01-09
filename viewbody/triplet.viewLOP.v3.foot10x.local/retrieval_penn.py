@@ -16,7 +16,7 @@ from scipy.io import loadmat
 
 NET_PATH = './model/epoch300.pth.tar'
 DATA_ROOT = '/data1/wurundi/Penn_Action/motions'
-#VIDEO_DIR = '/data1/wurundi/Penn_Action/videos'
+VIDEO_DIR = '/data1/wurundi/Penn_Action/videos'
 
 
 def get_data(json_dir, is_mixamo, scale=1.0, person=0, start=0, end=-1):
@@ -42,9 +42,9 @@ def get_data(json_dir, is_mixamo, scale=1.0, person=0, start=0, end=-1):
 
 
 class QueryEngine(object):
-    def __init__(self, data_root, net_path, device):
+    def __init__(self, data_root, video_dir, net_path, device):
         self.data_root = data_root
-        #self.video_dir = video_dir
+        self.video_dir = video_dir
 
         self.net = torch.load(net_path)['net'].to(device)
         self.net.eval()
@@ -107,7 +107,7 @@ class QueryEngine(object):
             bodymat_base.append(bodymat)
 
             info = {'name': filename[:4],
-                    #'video_path': os.path.join(self.video_dir, '{}.mp4'.format(vid_name)),
+                    'video_path': os.path.join(self.video_dir, '{}.mp4'.format(vid_name)),
                     'action': content['action'].tolist()[0],
                     'pose': content['pose'].tolist()[0],
                     'nr_frames': motion.shape[-1],
@@ -235,6 +235,7 @@ def clip_and_save_video(vid_path, out_path, left: int, right: int):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-q', '--query_json_dir', help="query motion's json dir, openpose format", type=str)
+    parser.add_argument('-v', '--vid_path', type=str)
     parser.add_argument('--start', help="query motion's start frame", type=int, default=0)
     parser.add_argument('--end', help="query motion's end frame", type=int, default=-1)
     parser.add_argument('-ih', '--height', type=int)
@@ -251,7 +252,7 @@ if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu_ids)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    engine = QueryEngine(DATA_ROOT, NET_PATH, device)
+    engine = QueryEngine(DATA_ROOT, VIDEO_DIR, NET_PATH, device)
 
     h, w = args.height, args.width
     scale = config.img_size[0] / h
@@ -271,7 +272,6 @@ if __name__ == '__main__':
         path = os.path.join(args.write_json, 'result.json')
         with open(path, 'w') as f:
             json.dump(result, f)
-    '''
     if args.vis_dir is not None:
         out_dir = args.vis_dir
         ensure_dir(out_dir)
@@ -280,11 +280,13 @@ if __name__ == '__main__':
         with open(path, 'w') as f:
             json.dump(result, f)
 
-        out_path = os.path.join(out_dir, 'query.mp4')
+        if args.vid_path is not None:
+            src_path = args.vid_path
+            out_path = os.path.join(out_dir, 'query.mp4')
+            clip_and_save_video(src_path, out_path, args.start, args.end)
         #motion2video(data['raw'], out_path, h, w)
 
         for i, item in enumerate(result):
             src_path = item['info']['video_path']
             out_path = os.path.join(out_dir, 'res-top{}.mp4'.format(i))
             clip_and_save_video(src_path, out_path, item['interval'][0], item['interval'][1])
-    '''
