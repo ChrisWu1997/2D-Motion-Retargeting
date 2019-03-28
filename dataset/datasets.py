@@ -81,23 +81,23 @@ class MixamoDatasetForView(_MixamoDatasetBase):
         target1 = input1.detach().clone()
         target2 = input2.detach().clone()
 
-        input122 = self.preprocessing(item12, view2, param12)
-        input211 = self.preprocessing(item21, view1, param21)
-        target122 = input122.detach().clone()
-        target211 = input211.detach().clone()
+        input12 = self.preprocessing(item12, view2, param12)
+        input21 = self.preprocessing(item21, view1, param21)
+        target12 = input12.detach().clone()
+        target21 = input21.detach().clone()
 
-        return {"input1": input1, "target111": target1,
-                "input2": input2, "target222": target2,
-                "input122": input122, "target122": target122,
-                "input211": input211, "target211": target211,
+        return {"input1": input1, "target1": target1,
+                "input2": input2, "target2": target2,
+                "input12": input12, "target12": target12,
+                "input21": input21, "target21": target21,
                 "mot1": mot1, "mot2": mot2,
                 "view1": view1, "view2": view2,
                 "char1": char1, "char2": char2}
 
 
-class MixamoDatasetForThree(_MixamoDatasetBase):
+class MixamoDatasetForFull(_MixamoDatasetBase):
     def __init__(self, phase, config):
-        super(MixamoDatasetForThree, self).__init__(phase, config)
+        super(MixamoDatasetForFull, self).__init__(phase, config)
 
     def __getitem__(self, index):
         # select two motions

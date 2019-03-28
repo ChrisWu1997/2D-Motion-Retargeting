@@ -5,7 +5,7 @@ import math
 import imageio
 from tqdm import tqdm
 from PIL import Image
-
+from functional.motion import normalize_motion_inv, trans_motion_inv
 
 def interpolate_color(color1, color2, alpha):
     color_i = alpha * np.array(color1) + (1 - alpha) * np.array(color2)
@@ -45,6 +45,7 @@ def hex2rgb(hex, number_of_colors=3):
 
 
 def joints2image(joints_position, colors, transparency=False, H=512, W=512, nr_joints=49, imtype=np.uint8):
+    nr_joints = joints_position.shape[0]
 
     if nr_joints == 49: # full joints(49): basic(15) + eyes(2) + toes(2) + hands(30)
         limbSeq = [[0, 1], [1, 2], [1, 5], [1, 8], [2, 3], [3, 4], [5, 6], [6, 7], \
@@ -167,8 +168,6 @@ def pose2im_all(all_peaks, H=512, W=512):
                [8, 12], [12, 13], [13, 14],                  # left leg
                [1, 0],                                       # head/neck
                [1, 8],                                       # body,
-               [0, 15], #[15, 17],                            # head-eye
-               [0, 16], #[16, 18],                            # eye-ear
                ]
 
     limb_colors = [[0, 60, 255], [0, 120, 255], [0, 180, 255],
@@ -177,16 +176,12 @@ def pose2im_all(all_peaks, H=512, W=512):
                     [255, 170, 0], [255, 85, 0], [255, 0, 0],
                     [0, 85, 255],
                     [0, 0, 255],
-                    [240, 32, 160], #[139, 26, 85],
-                    [0, 127, 255], #[0, 102, 205],
                    ]
 
     joint_colors = [[85, 0, 255], [0, 0, 255], [0, 60, 255], [0, 120, 255], [0, 180, 255],
                     [180, 255, 0], [120, 255, 0], [60, 255, 0], [0, 0, 255],
                     [170, 255, 0], [85, 255, 0], [0, 255, 0],
                     [255, 170, 0], [255, 85, 0], [255, 0, 0],
-                    [211, 0, 148], [0, 165, 255],
-                    #[226, 43, 138], [0, 133, 205],
                     ]
 
     image = pose2im(all_peaks, limbSeq, limb_colors, joint_colors, H, W)
@@ -225,3 +220,23 @@ def pose2im(all_peaks, limbSeq, limb_colors, joint_colors, H, W, _circle=True, _
                 canvas = cv2.addWeighted(canvas, 0.4, cur_canvas, 0.6, 0)
 
     return canvas.astype(imtype)
+
+
+def visulize_motion_in_training(outputs, mean_pose, std_pose, nr_visual=4, H=512, W=512):
+    ret = {}
+    for k, out in outputs.items():
+        motion = out[0].detach().cpu().numpy()
+        inds = np.linspace(0, motion.shape[1] - 1, nr_visual, dtype=int)
+        motion = motion[:, inds]
+        motion = motion.reshape(-1, 2, motion.shape[-1])
+        motion = normalize_motion_inv(motion, mean_pose, std_pose)
+        peaks = trans_motion_inv(motion)
+
+        heatmaps = []
+        for i in range(peaks.shape[2]):
+            skeleton = pose2im_all(peaks[:, :, i], H, W)
+            heatmaps.append(skeleton)
+        heatmaps = np.stack(heatmaps).transpose((0, 3, 1, 2)) / 255.0
+        ret[k] = heatmaps
+
+    return ret

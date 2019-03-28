@@ -13,6 +13,7 @@ class _MixamoDatasetBase(Dataset):
         assert phase in ['train', 'test']
         self.data_root = os.path.join(config.data_dir, phase)
         self.phase = phase
+        self.unit = config.unit
         self.view_angles = config.view_angles
         self.meanpose_path = config.meanpose_path
         self.stdpose_path = config.stdpose_path
@@ -23,7 +24,7 @@ class _MixamoDatasetBase(Dataset):
                                     'Pearl', 'Warrok', 'Globin', 'Kaya', 'PeanutMan']
             self.aug = True
         else:
-            self.character_names = ['Ty', 'Andromeda', 'Pumpkinhulk', 'SportyGranny', 'Whiteclown']
+            self.character_names = ['Ty', 'Andromeda', 'Pumpkinhulk', 'SportyGranny']
             self.aug = False
 
         items = glob.glob(os.path.join(self.data_root, self.character_names[0], '*/motions/*.npy'))
@@ -98,7 +99,7 @@ class _MixamoDatasetBase(Dataset):
         if view_angle is not None:
             local3d = get_local3d(motion3d, view_angle)
 
-        motion_proj = trans_motion3d(motion3d, local3d)
+        motion_proj = trans_motion3d(motion3d, local3d, self.unit)
         motion_proj = normalize_motion(motion_proj, self.mean_pose, self.std_pose)
         motion_proj = motion_proj.reshape((-1, motion_proj.shape[-1]))   # reshape to (joints*2, len_frames)
         motion_proj = torch.Tensor(motion_proj) # FIXME : change to torch.from_numpy?

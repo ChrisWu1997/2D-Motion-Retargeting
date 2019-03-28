@@ -1,15 +1,16 @@
 from torch.utils.data import DataLoader
-from dataset.datasets import MixamoDatasetForSkeleton, MixamoDatasetForView, MixamoDatasetForThree
+from dataset.datasets import MixamoDatasetForSkeleton, MixamoDatasetForView, MixamoDatasetForFull
 import numpy as np
 
 
-def get_dataloader(name, phase, config, batch_size=64, num_workers=4):
-    if name == 'skeleton':
-        dataset = MixamoDatasetForSkeleton(phase, config.data_dir)
-    elif name == 'view':
-        dataset = MixamoDatasetForView(phase, config.data_dir)
+def get_dataloader(phase, config, batch_size=64, num_workers=4):
+    assert config.name is not None
+    if config.name == 'skeleton':
+        dataset = MixamoDatasetForSkeleton(phase, config)
+    elif config.name == 'view':
+        dataset = MixamoDatasetForView(phase, config)
     else:
-        dataset = MixamoDatasetForThree(phase, config.data_dir)
+        dataset = MixamoDatasetForFull(phase, config)
 
     if phase == 'Train':
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True,
