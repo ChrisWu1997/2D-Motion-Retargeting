@@ -1,106 +1,11 @@
-import os
-from torch.utils.data import Dataset, DataLoader
 import numpy as np
-import torch
-import glob
 from copy import copy
-
-
-class _MixamoDatasetBase(Dataset):
-    def __init__(self, phase, data_dir):
-        super(_MixamoDatasetBase, self).__init__()
-
-        assert phase in ['train', 'test']
-        self.data_root = os.path.join(data_dir, phase)
-        self.phase = phase
-
-        # FIXME : decide character_names
-        if phase == 'train':
-            self.character_names = ['Aj', 'BigVegas', 'Claire', 'Jasper', 'Lola', 'Malcolm',
-                                    'Pearl', 'Warrok', 'Globin', 'Kaya', 'PeanutMan']
-            self.aug = True
-        else:
-            self.character_names = ['Ty', 'Andromeda', 'Pumpkinhulk', 'SportyGranny', 'Whiteclown']
-            self.aug = False
-
-        items = glob.glob(os.path.join(self.data_root, self.character_names[0], '*/motions/*.npy'))
-        self.motion_names = ['/'.join(x.split('/')[-3:]) for x in items]
-
-    def build_item(self, char_name, mot_name):
-        """
-        :param char_name: character_name
-        :param mot_name: animation_name/motions/xxx.npy
-        :return:
-        """
-        return os.path.join(self.data_root, char_name, mot_name)
-
-    @staticmethod
-    def gen_aug_param(rotate=False):
-        if rotate:
-            return {'ratio': np.random.uniform(0.8, 1.2),
-                    'roll': np.random.uniform((-np.pi / 9, -np.pi / 9, -np.pi / 6), (np.pi / 9, np.pi / 9, np.pi / 6))}
-        else:
-            return {'ratio': np.random.uniform(0.8, 1.2)}
-
-    @staticmethod
-    def augmentation(data, param=None):
-        """
-        :param data: numpy array of size (joints, 3, len_frames)
-        :return:
-        """
-        if param is None:
-            return data, param
-
-        # rotate
-        if 'roll' in param.keys():
-            cx, cy, cz = np.cos(param['roll'])
-            sx, sy, sz = np.sin(param['roll'])
-            mat33_x = np.array([
-                [1, 0, 0],
-                [0, cx, -sx],
-                [0, sx, cx]
-            ], dtype='float')
-            mat33_y = np.array([
-                [cy, 0, sy],
-                [0, 1, 0],
-                [-sy, 0, cy]
-            ], dtype='float')
-            mat33_z = np.array([
-                [cz, -sz, 0],
-                [sz, cz, 0],
-                [0, 0, 1]
-            ], dtype='float')
-            data = mat33_x @ mat33_y @ mat33_z @ data
-
-        # scale
-        if 'ratio' in param.keys():
-            data = data * param['ratio']
-
-        return data, param
-
-    def __len__(self):
-        return len(self.motion_names) * len(self.character_names)
+from dataset.base_dataset import _MixamoDatasetBase
 
 
 class MixamoDatasetForSkeleton(_MixamoDatasetBase):
-    def __init__(self, phase, data_dir):
-        super(MixamoDatasetForSkeleton, self).__init__(phase, data_dir)
-
-    def preprocessing(self, item, param=None):
-        motion3d = np.load(item)
-
-        if self.aug:
-            motion3d, param = self.augmentation(motion3d, param)
-
-        motion_proj = trans_motion(motion3d)
-
-        motion_proj = (motion_proj - self.mean_pose[:, :, np.newaxis]) / self.std_pose[:, :, np.newaxis]
-
-        motion_proj = motion_proj.reshape((-1, motion_proj.shape[-1]))   # reshape to (joints*2, len_frames)
-
-        motion_proj = torch.Tensor(motion_proj)
-
-        return motion_proj
+    def __init__(self, phase, config):
+        super(MixamoDatasetForSkeleton, self).__init__(phase, config)
 
     def __getitem__(self, index):
         # select two motions
@@ -125,13 +30,13 @@ class MixamoDatasetForSkeleton(_MixamoDatasetBase):
         item12 = self.build_item(mot1, char2)
         item21 = self.build_item(mot2, char1)
 
-        input1 = self.preprocessing(item1, param1)
-        input2 = self.preprocessing(item2, param2)
+        input1 = self.preprocessing(item1, param=param1)
+        input2 = self.preprocessing(item2, param=param2)
         target1 = input1.detach().clone()
         target2 = input2.detach().clone()
 
-        input12 = self.preprocessing(item12, param12)
-        input21 = self.preprocessing(item21, param21)
+        input12 = self.preprocessing(item12, param=param12)
+        input21 = self.preprocessing(item21, param=param21)
         target12 = input12.detach().clone()
         target21 = input21.detach().clone()
 
@@ -144,35 +49,8 @@ class MixamoDatasetForSkeleton(_MixamoDatasetBase):
 
 
 class MixamoDatasetForView(_MixamoDatasetBase):
-    def __init__(self, phase, data_dir):
-        super(MixamoDatasetForView, self).__init__(phase, data_dir)
-        self.view_angles = [(0, 0, -np.pi / 2),
-                           (0, 0, -np.pi / 3),
-                           (0, 0, -np.pi / 6),
-                           (0, 0, 0),
-                           (0, 0, np.pi / 6),
-                           (0, 0, np.pi / 3),
-                           (0, 0, np.pi / 2)]
-
-    def preprocessing(self, item, view_angle, param=None):
-        """
-        :param data: numpy array of size (joints, 3, len_frames)
-        :return:
-        """
-        motion3d = np.load(item[0])[:15]
-        local3d = np.load(item[1])
-
-        # convert 3d to 2d
-        local3d = rotate_coordinates(local3d, view_angle)
-
-        motion_proj = trans_motion(motion3d, local3d, scale = param[0])
-
-        motion_proj = (motion_proj - self.mean_pose[:, :, np.newaxis]) / self.std_pose[:, :, np.newaxis]
-        motion_proj = motion_proj.reshape((-1, motion_proj.shape[-1]))   # reshape to (joints*2, len_frames)
-
-        motion_proj = torch.Tensor(motion_proj)
-
-        return motion_proj
+    def __init__(self, phase, config):
+        super(MixamoDatasetForView, self).__init__(phase, config)
 
     def __getitem__(self, index):
         # select two motions
@@ -218,35 +96,8 @@ class MixamoDatasetForView(_MixamoDatasetBase):
 
 
 class MixamoDatasetForThree(_MixamoDatasetBase):
-    def __init__(self, phase, data_dir):
-        super(MixamoDatasetForThree, self).__init__(phase, data_dir)
-        self.view_angles = [(0, 0, -np.pi / 2),
-                           (0, 0, -np.pi / 3),
-                           (0, 0, -np.pi / 6),
-                           (0, 0, 0),
-                           (0, 0, np.pi / 6),
-                           (0, 0, np.pi / 3),
-                           (0, 0, np.pi / 2)]
-
-    def preprocessing(self, item, view_angle, param=None):
-        """
-        :param data: numpy array of size (joints, 3, len_frames)
-        :return:
-        """
-        motion3d = np.load(item[0])
-        local3d = np.load(item[1])
-
-        # convert 3d to 2d
-        local3d = rotate_coordinates(local3d, view_angle)
-
-        motion_proj = trans_motion(motion3d, local3d, scale = param[0])
-
-        motion_proj = (motion_proj - self.mean_pose[:, :, np.newaxis]) / self.std_pose[:, :, np.newaxis]
-        motion_proj = motion_proj.reshape((-1, motion_proj.shape[-1]))   # reshape to (joints*2, len_frames)
-
-        motion_proj = torch.Tensor(motion_proj)
-
-        return motion_proj
+    def __init__(self, phase, config):
+        super(MixamoDatasetForThree, self).__init__(phase, config)
 
     def __getitem__(self, index):
         # select two motions
