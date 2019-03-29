@@ -1,9 +1,9 @@
+from functional.motion import trans_motion3d, normalize_motion, get_local3d
 import os
 from torch.utils.data import Dataset
 import torch
-import numpy as np
 import glob
-from functional.motion import trans_motion3d, normalize_motion, get_local3d
+import numpy as np
 
 
 class _MixamoDatasetBase(Dataset):
@@ -46,7 +46,7 @@ class _MixamoDatasetBase(Dataset):
             return {'ratio': np.random.uniform(0.8, 1.2),
                     'roll': np.random.uniform((-np.pi / 9, -np.pi / 9, -np.pi / 6), (np.pi / 9, np.pi / 9, np.pi / 6))}
         else:
-            return {'ratio': np.random.uniform(0.8, 1.2)}
+            return {'ratio': np.random.uniform(0.5, 1.5)}
 
     @staticmethod
     def augmentation(data, param=None):
@@ -127,7 +127,6 @@ def get_meanpose(config):
     return meanpose, stdpose
 
 
-# TODO: add view
 def gen_meanpose(config):
     all_paths = glob.glob(os.path.join(config.data_dir, 'train', '*/*/motions/*.npy'))
     all_joints = []

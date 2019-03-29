@@ -1,15 +1,15 @@
+from dataset import get_dataloader
+from common import config
+from model import get_autoencoder
+from functional.utils import cycle
+from agent import get_training_agent
+from functional.visualization import visulize_motion_in_training
 import torch
 import os
 from collections import OrderedDict
 from tqdm import tqdm
 from tensorboardX import SummaryWriter
 import argparse
-from common import config
-from model import get_autoencoder
-from functional.utils import cycle
-from dataset import get_dataloader
-from agent import get_training_agent
-from functional.visualization import visulize_motion_in_training
 
 torch.backends.cudnn.benchmark = True
 

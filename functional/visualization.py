@@ -131,11 +131,12 @@ def joints2image(joints_position, colors, transparency=False, H=512, W=512, nr_j
     return [canvas.astype(imtype), canvas_cropped.astype(imtype)]
 
 
-def motion2video(motion, h, w, save_path, colors, transparency=False, motion_tgt=None, fps=25, nr_joints=49):
-    videowriter = imageio.get_writer(os.path.join(save_path, 'video.mp4'), fps=fps)
+def motion2video(motion, h, w, save_path, colors, transparency=False, motion_tgt=None, fps=25):
+    nr_joints = motion.shape[0]
+    videowriter = imageio.get_writer(save_path, fps=fps)
     vlen = motion.shape[-1]
-    frames_dir = os.path.join(save_path)
-    #ensure_dir(frames_dir)
+    # frames_dir = os.path.join(save_path)
+    # ensure_dir(frames_dir)
     for i in tqdm(range(vlen)):
         [img, img_cropped] = joints2image(motion[:, :, i], colors, transparency, H=h, W=w, nr_joints=nr_joints)
         if motion_tgt is not None:
@@ -145,7 +146,7 @@ def motion2video(motion, h, w, save_path, colors, transparency=False, motion_tgt
             img_cropped = cv2.addWeighted(img_tgt, 0.3, img_ori, 0.7, 0)
             bb = bounding_box(img_cropped)
             img_cropped = img_cropped[:, bb[2]:bb[3], :]
-        save_image(img_cropped, os.path.join(frames_dir, "%04d.png" % i))
+        # save_image(img_cropped, os.path.join(frames_dir, "%04d.png" % i))
         videowriter.append_data(img)
     videowriter.close()
 

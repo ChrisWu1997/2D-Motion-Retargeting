@@ -20,6 +20,7 @@ class Config:
     model_dir = None
 
     # data info
+    img_size = (512, 512)
     unit = 128
     nr_joints = 15
     len_joints = 2 * nr_joints - 2
@@ -53,7 +54,7 @@ class Config:
 
     def initialize(self, args):
         self.name = args.name
-        self.use_triplet = not args.disable_triplet
+        self.use_triplet = not args.disable_triplet if hasattr(args, 'disable_triplet') else None
 
         os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu_ids)
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

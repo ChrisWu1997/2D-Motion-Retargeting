@@ -1,10 +1,18 @@
+from scipy.ndimage import gaussian_filter1d
 import numpy as np
+import json
+import os
+import torch
 
 
 def trans_motion3d(motion3d, local3d=None, unit=128):
     # orthonormal projection
 
     motion3d = motion3d * unit
+
+    # neck and mid-hip
+    motion3d[1, :, :] = (motion3d[2, :, :] + motion3d[5, :, :]) / 2
+    motion3d[8, :, :] = (motion3d[9, :, :] + motion3d[12, :, :]) / 2
 
     if local3d is not None:
         motion_proj = local3d[[0, 2], :] @ motion3d  # (15, 2, 64)
@@ -60,6 +68,18 @@ def normalize_motion_inv(motion, mean_pose, std_pose):
     if len(motion.shape) == 2:
         motion = motion.reshape(-1, 2, motion.shape[-1])
     return motion * std_pose[:, :, np.newaxis] + mean_pose[:, :, np.newaxis]
+
+
+def preprocess_motion2d(motion, mean_pose, std_pose):
+    motion_trans = normalize_motion(trans_motion2d(motion), mean_pose, std_pose)
+    motion_trans = motion_trans.reshape((-1, motion_trans.shape[-1]))
+    return torch.Tensor(motion_trans).unsqueeze(0)
+
+
+def postprocess_motion2d(motion, mean_pose, std_pose, sx=256, sy=256):
+    motion = motion.detach().cpu().numpy()[0].reshape(-1, 2, motion.shape[-1])
+    motion = trans_motion_inv(normalize_motion_inv(motion, mean_pose, std_pose), sx, sy)
+    return motion
 
 
 def get_local3d(motion3d, angles=None):
@@ -126,3 +146,27 @@ def rotation_matrix_along_axis(x, angle):
     x = x.reshape(-1, 1)
     mat33_x = cx * np.eye(3) + sx * x_cpm + (1.0 - cx) * np.matmul(x, x.T)
     return mat33_x
+
+
+def openpose2motion(json_dir, scale=1.0, smooth=True):
+    json_files = sorted(os.listdir(json_dir))
+    json_files = [os.path.join(json_dir, x) for x in json_files]
+
+    motion = []
+    for path in json_files:
+        with open(path) as f:
+            jointDict = json.load(f)
+            joint = np.array(jointDict['people'][0]['pose_keypoints_2d']).reshape((-1, 3))[:15, :2]
+            if len(motion) > 0:
+                joint[np.where(joint == 0)] = motion[-1][np.where(joint == 0)]
+            motion.append(joint)
+
+    for i in range(len(motion) - 1, 0, -1):
+        motion[i - 1][np.where(motion[i - 1] == 0)] = motion[i][np.where(motion[i - 1] == 0)]
+
+    motion = np.stack(motion, axis=2)
+    if smooth:
+        motion = gaussian_filter1d(motion, sigma=2, axis=-1)
+    motion = motion * scale
+    return motion
+

@@ -10,7 +10,7 @@ def get_autoencoder(config):
                              global_pool=F.max_pool1d, convpool=nn.MaxPool1d, compress=False)
     elif config.name == 'view':
         return AutoEncoder2x(config.mot_en_channels, config.view_en_channels, config.de_channels,
-                             global_pool=F.avg_pool1d, convpool=nn.AvgPool1d, compress=False)   #FIXME: max/avg
+                             global_pool=F.max_pool1d, convpool=nn.MaxPool1d, compress=False)   #FIXME: max/avg
     else:
         return AutoEncoder3x(config.mot_en_channels, config.body_en_channels,
                              config.view_en_channels, config.de_channels)

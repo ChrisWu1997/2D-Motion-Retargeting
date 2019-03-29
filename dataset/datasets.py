@@ -1,6 +1,6 @@
+from dataset.base_dataset import _MixamoDatasetBase
 import numpy as np
 from copy import copy
-from dataset.base_dataset import _MixamoDatasetBase
 
 
 class MixamoDatasetForSkeleton(_MixamoDatasetBase):
