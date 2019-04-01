@@ -9,7 +9,7 @@ class Config:
     device = None
 
     # data paths
-    data_dir = '/data1/wurundi/mixamo_release'
+    data_dir = '/data1/wurundi/mixamo_release'  # FIXME : change it before final release
     meanpose_path = None
     stdpose_path = None
 
@@ -42,6 +42,9 @@ class Config:
     use_triplet = True
     triplet_margin = 1
     triplet_weight = 1
+    use_footvel_loss = False
+    foot_idx = [20, 21, 26, 27]
+    footvel_loss_weight = 0.1
 
     nr_epochs = 300
     batch_size = 64
@@ -55,6 +58,7 @@ class Config:
     def initialize(self, args):
         self.name = args.name
         self.use_triplet = not args.disable_triplet if hasattr(args, 'disable_triplet') else None
+        self.use_footvel_loss = args.use_footvel_loss if hasattr(args, 'use_footvel_loss') else None
 
         os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu_ids)
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -70,15 +74,15 @@ class Config:
             self.de_channels = [self.mot_en_channels[-1] + self.body_en_channels[-1], 128, 64, self.len_joints + 2]
             self.view_angles = None
 
-            self.meanpose_path = os.path.join(self.data_dir, "meanpose.npy")
-            self.stdpose_path = os.path.join(self.data_dir, "stdpose.npy")
+            self.meanpose_path = './mixamo_data/meanpose.npy'
+            self.stdpose_path = './mixamo_data/stdpose.npy'
         elif self.name == 'view':
             self.mot_en_channels = [self.len_joints + 2, 64, 96, 128]
             self.view_en_channels = [self.len_joints, 64, 96, 128, 32]
             self.de_channels = [self.mot_en_channels[-1] + self.view_en_channels[-1], 128, 64, self.len_joints + 2]
 
-            self.meanpose_path = os.path.join(self.data_dir, "meanpose_with_view.npy")
-            self.stdpose_path = os.path.join(self.data_dir, "stdpose_with_view.npy")
+            self.meanpose_path = './mixamo_data/meanpose_with_view.npy'
+            self.stdpose_path = './mixamo_data/stdpose_with_view.npy'
         else:
             self.mot_en_channels = [self.len_joints + 2, 64, 96, 128]
             self.body_en_channels = [self.len_joints, 32, 48, 64, 16]
@@ -86,8 +90,8 @@ class Config:
             self.de_channels = [self.mot_en_channels[-1] + self.body_en_channels[-1] + self.view_en_channels[-1],
                                 128, 64, self.len_joints + 2]
 
-            self.meanpose_path = os.path.join(self.data_dir, "meanpose_with_view.npy")
-            self.stdpose_path = os.path.join(self.data_dir, "stdpose_with_view.npy")
+            self.meanpose_path = './mixamo_data/meanpose_with_view.npy'
+            self.stdpose_path = './mixamo_data/stdpose_with_view.npy'
 
 
 config = Config()

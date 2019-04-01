@@ -21,6 +21,7 @@ def main():
     # parser.add_argument('-c', '--continue', dest='continue_path', type=str, required=False)
     parser.add_argument('-g', '--gpu_ids', type=int, default=0, required=False, help="specify gpu ids")
     parser.add_argument('--disable_triplet', action='store_true', default=False, help="disable triplet loss")
+    parser.add_argument('--use_footvel_loss', action='store_true', default=False, help="use use footvel loss")
     parser.add_argument('--vis', action='store_true', default=False, help="visualize output in training")
     args = parser.parse_args()
 

@@ -3,7 +3,7 @@ import numpy as np
 
 
 def main():
-    data_root = '/data1/wurundi/mixamo_release'
+    data_root = './mixamo_data'
     for phase in ['train', 'test']:
         phase_dir = os.path.join(data_root, phase)
         character_names = os.listdir(phase_dir)

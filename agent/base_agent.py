@@ -15,11 +15,14 @@ class BaseAgent(object):
         self.device = config.device
 
         self.use_triplet = config.use_triplet
+        self.use_footvel_loss = config.use_footvel_loss
 
         # set loss function
         self.mse = nn.MSELoss()
         self.tripletloss = nn.TripletMarginLoss(margin=config.triplet_margin)
         self.triplet_weight = config.triplet_weight
+        self.foot_idx = config.foot_idx
+        self.footvel_loss_weight = config.footvel_loss_weight
 
         # set optimizer
         self.optimizer = optim.Adam(self.net.parameters(), config.lr)
@@ -30,7 +33,8 @@ class BaseAgent(object):
             save_path = os.path.join(self.model_dir, "model_epoch{}.pth".format(self.clock.epoch))
         else:
             save_path = os.path.join(self.model_dir, name)
-        torch.save(self.net.state_dict(), save_path)
+        torch.save(self.net.cpu().state_dict(), save_path)
+        self.net.to(self.device)
 
     def load_network(self, epoch):
         load_path = os.path.join(self.model_dir, "model_epoch{}.pth".format(epoch))

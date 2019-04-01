@@ -15,8 +15,6 @@ def handle2x(config, args):
     # resize input
     h1, w1, scale1 = pad_to_height(config.img_size[0], args.img1_height, args.img1_width)
     h2, w2, scale2 = pad_to_height(config.img_size[0], args.img2_height, args.img2_width)
-    if args.name == 'full':
-        h3, w3, scale3 = pad_to_height(config.img_size[0], args.img2_height, args.img3_width)
 
     # load trained model
     net = get_autoencoder(config)
@@ -47,7 +45,7 @@ def handle2x(config, args):
     out12 = postprocess_motion2d(out12, mean_pose, std_pose, w2 // 2, h2 // 2)
     out21 = postprocess_motion2d(out21, mean_pose, std_pose, w1 // 2, h1 // 2)
 
-    if args.smooth:
+    if not args.disable_smooth:
         out12 = gaussian_filter1d(out12, sigma=2, axis=-1)
         out21 = gaussian_filter1d(out21, sigma=2, axis=-1)
 
@@ -62,10 +60,10 @@ def handle2x(config, args):
                  out12=out12,
                  out21=out21)
         if args.render_video:
-            motion2video(input1, h1, w1, os.path.join(save_dir + 'input1.mp4'), color1, args.transparency, fps=args.fps)
-            motion2video(input2, h2, w2, os.path.join(save_dir + 'input2.mp4'), color2, args.transparency, fps=args.fps)
-            motion2video(out12, h2, w2, os.path.join(save_dir + 'out12.mp4'), color2, args.transparency, fps=args.fps)
-            motion2video(out21, h1, w1, os.path.join(save_dir + 'out21.mp4'), color1, args.transparency, fps=args.fps)
+            motion2video(input1, h1, w1, os.path.join(save_dir, 'input1.mp4'), color1, args.transparency, fps=args.fps)
+            motion2video(input2, h2, w2, os.path.join(save_dir,'input2.mp4'), color2, args.transparency, fps=args.fps)
+            motion2video(out12, h2, w2, os.path.join(save_dir,'out12.mp4'), color2, args.transparency, fps=args.fps)
+            motion2video(out21, h1, w1, os.path.join(save_dir,'out21.mp4'), color1, args.transparency, fps=args.fps)
 
 
 def handle3x(config, args):
@@ -103,9 +101,10 @@ def handle3x(config, args):
     # postprocessing the outputs
     input1 = postprocess_motion2d(input1, mean_pose, std_pose, w1 // 2, h1 // 2)
     input2 = postprocess_motion2d(input2, mean_pose, std_pose, w2 // 2, h2 // 2)
+    input3 = postprocess_motion2d(input3, mean_pose, std_pose, w2 // 2, h2 // 2)
     out = postprocess_motion2d(out, mean_pose, std_pose, w2 // 2, h2 // 2)
 
-    if args.smooth:
+    if not args.disable_smooth:
         out = gaussian_filter1d(out, sigma=2, axis=-1)
 
     if args.out_dir is not None:
@@ -118,10 +117,10 @@ def handle3x(config, args):
                  input2=input2,
                  out=out)
         if args.render_video:
-            motion2video(input1, h1, w1, os.path.join(save_dir + 'input1.mp4'), color1, args.transparency, fps=args.fps)
-            motion2video(input2, h2, w2, os.path.join(save_dir + 'input2.mp4'), color2, args.transparency, fps=args.fps)
-            motion2video(input3, h3, w3, os.path.join(save_dir + 'input3.mp4'), color2, args.transparency, fps=args.fps)
-            motion2video(out, h2, w2, os.path.join(save_dir + 'out.mp4'), color2, args.transparency, fps=args.fps)
+            motion2video(input1, h1, w1, os.path.join(save_dir,'input1.mp4'), color1, args.transparency, fps=args.fps)
+            motion2video(input2, h2, w2, os.path.join(save_dir,'input2.mp4'), color2, args.transparency, fps=args.fps)
+            motion2video(input3, h3, w3, os.path.join(save_dir,'input3.mp4'), color2, args.transparency, fps=args.fps)
+            motion2video(out, h2, w2, os.path.join(save_dir,'out.mp4'), color2, args.transparency, fps=args.fps)
 
 
 def main():
@@ -143,8 +142,8 @@ def main():
     parser.add_argument('--fps', type=float, default=25, help="fps of output video")
     parser.add_argument('--color1', type=str, default='#a50b69#b73b87#db9dc3', help='color1')
     parser.add_argument('--color2', type=str, default='#4076e0#40a7e0#40d7e0', help='color2')
-    parser.add_argument('--smooth', action='store_true',
-                        help="to smooth the output using gaussian kernel")
+    parser.add_argument('--disable_smooth', action='store_true',
+                        help="disable gaussian kernel smoothing")
     parser.add_argument('--transparency', action='store_true',
                         help="make background transparent in resulting frames")
     parser.add_argument('--max_length', type=int, default=120,
@@ -159,7 +158,7 @@ def main():
     if args.name == 'full':
         handle3x(config, args)
     else:
-        handle3x(config, args)
+        handle2x(config, args)
 
 
 if __name__ == '__main__':
