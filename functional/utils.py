@@ -1,15 +1,7 @@
 from PIL import Image
 import os
 import json
-import torch
-import numpy as np
-import numbers
-import matplotlib
-matplotlib.use('agg')
-import matplotlib.pyplot as plt
-import cv2
 import logging
-import math
 import shutil
 import csv
 

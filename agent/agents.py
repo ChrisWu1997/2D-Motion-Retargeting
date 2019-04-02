@@ -13,6 +13,7 @@ class Agent2x(BaseAgent):
         inputs = [data[name].to(self.device) for name in self.inputs_name]
         targets = [data[name].to(self.device) for name in self.targets_name]
 
+        # update loss metric
         losses = {}
 
         if self.use_triplet:
@@ -24,7 +25,6 @@ class Agent2x(BaseAgent):
         else:
             outputs = self.net.cross(inputs[0], inputs[1])
 
-        # update loss metric
         for i, target in enumerate(targets):
             losses['rec' + self.targets_name[i][6:]] = self.mse(outputs[i], target)
 
@@ -46,7 +46,11 @@ class Agent2x(BaseAgent):
 class Agent3x(BaseAgent):
     def __init__(self, config, net):
         super(Agent3x, self).__init__(config, net)
-        self.inputs_name = ['input1', 'input2']
+        if self.use_triplet:
+            self.inputs_name = ['input1', 'input2', 'input121', 'input112',
+                                'input122', 'input212', 'input221', 'input211']
+        else:
+            self.inputs_name = ['input1', 'input2']
         self.targets_name = ['target111', 'target222', 'target121', 'target112',
                              'target122', 'target212', 'target221', 'target211']
 
@@ -54,10 +58,20 @@ class Agent3x(BaseAgent):
         inputs = [data[name].to(self.device) for name in self.inputs_name]
         targets = [data[name].to(self.device) for name in self.targets_name]
 
-        outputs = self.net.cross(inputs[0], inputs[1])
-
         # update loss metric
         losses = {}
+
+        if self.use_triplet:
+            outputs, motionvecs, bodyvecs, viewvecs = self.net.cross_with_triplet(inputs)
+            losses['m_tpl1'] = self.triplet_weight * self.tripletloss(motionvecs[2], motionvecs[0], motionvecs[1])
+            losses['m_tpl2'] = self.triplet_weight * self.tripletloss(motionvecs[3], motionvecs[1], motionvecs[0])
+            losses['b_tpl1'] = self.triplet_weight * self.tripletloss(bodyvecs[2], bodyvecs[0], bodyvecs[1])
+            losses['b_tpl2'] = self.triplet_weight * self.tripletloss(bodyvecs[3], bodyvecs[1], bodyvecs[0])
+            losses['v_tpl1'] = self.triplet_weight * self.tripletloss(viewvecs[2], viewvecs[0], viewvecs[1])
+            losses['v_tpl2'] = self.triplet_weight * self.tripletloss(viewvecs[3], viewvecs[1], viewvecs[0])
+        else:
+            outputs = self.net.cross(inputs[0], inputs[1])
+
         for i, target in enumerate(targets):
             losses['rec' + self.targets_name[i][6:]] = self.mse(outputs[i], target)
 
@@ -67,8 +81,7 @@ class Agent3x(BaseAgent):
                 losses['foot_vel'] += self.footvel_loss_weight * self.mse(get_foot_vel(outputs[i], self.foot_idx),
                                                                           get_foot_vel(target, self.foot_idx))
 
-        # TODO : reorganize triplet loss
-        outputs_dict ={}
+        outputs_dict = {}
         for i, name in enumerate(self.targets_name):
             outputs_dict['output' + name[6:]] = outputs[i]
 

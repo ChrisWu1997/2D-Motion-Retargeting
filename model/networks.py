@@ -171,6 +171,49 @@ class AutoEncoder3x(nn.Module):
 
         return out1, out2, out121, out112, out122, out212, out221, out211
 
+    def cross_with_triplet(self, inputs):
+        x1, x2, x121, x112, x122, x212, x221, x211 = inputs
+        m1 = self.mot_encoder(x1)
+        b1 = self.body_encoder(x1[:, :-2, :])
+        v1 = self.view_encoder(x1[:, :-2, :])
+        m2 = self.mot_encoder(x2)
+        b2 = self.body_encoder(x2[:, :-2, :])
+        v2 = self.view_encoder(x2[:, :-2, :])
+
+        out1 = self.decoder(torch.cat([m1, b1.repeat(1, 1, m1.shape[-1]), v1.repeat(1, 1, m1.shape[-1])], dim=1))
+        out2 = self.decoder(torch.cat([m2, b2.repeat(1, 1, m2.shape[-1]), v2.repeat(1, 1, m2.shape[-1])], dim=1))
+        out121 = self.decoder(torch.cat([m1, b2.repeat(1, 1, m1.shape[-1]), v1.repeat(1, 1, m1.shape[-1])], dim=1))
+        out112 = self.decoder(torch.cat([m1, b1.repeat(1, 1, m1.shape[-1]), v2.repeat(1, 1, m1.shape[-1])], dim=1))
+        out122 = self.decoder(torch.cat([m1, b2.repeat(1, 1, m1.shape[-1]), v2.repeat(1, 1, m1.shape[-1])], dim=1))
+        out212 = self.decoder(torch.cat([m2, b1.repeat(1, 1, m2.shape[-1]), v2.repeat(1, 1, m2.shape[-1])], dim=1))
+        out221 = self.decoder(torch.cat([m2, b2.repeat(1, 1, m2.shape[-1]), v1.repeat(1, 1, m2.shape[-1])], dim=1))
+        out211 = self.decoder(torch.cat([m2, b1.repeat(1, 1, m2.shape[-1]), v1.repeat(1, 1, m2.shape[-1])], dim=1))
+
+        outputs = [out1, out2, out121, out112, out122, out212, out221, out211]
+
+        m122 = self.mot_encoder(x122)
+        m211 = self.mot_encoder(x211)
+        b212 = self.body_encoder(x212[:, :-2, :])
+        b121 = self.body_encoder(x121[:, :-2, :])
+        v221 = self.view_encoder(x221[:, :-2, :])
+        v112 = self.view_encoder(x112[:, :-2, :])
+
+        motionvecs = [m1.reshape(m1.shape[0], -1),
+                      m2.reshape(m2.shape[0], -1),
+                      m122.reshape(m122.shape[0], -1),
+                      m211.reshape(m211.shape[0], -1)]
+        bodyvecs = [b1.reshape(b1.shape[0], -1),
+                    b2.reshape(b2.shape[0], -1),
+                    b212.reshape(b212.shape[0], -1),
+                    b121.reshape(b121.shape[0], -1)]
+        viewvecs = [v1.reshape(v1.shape[0], -1),
+                    v2.reshape(v2.shape[0], -1),
+                    v221.reshape(v221.shape[0], -1),
+                    v112.reshape(v112.shape[0], -1)]
+
+        return outputs, motionvecs, bodyvecs, viewvecs
+
+
     def transfer_body(self, x1, x2):
         m1 = self.mot_encoder(x1)
         b2 = self.body_encoder(x2[:, :-2, :]).repeat(1, 1, m1.shape[-1])

@@ -26,14 +26,12 @@ def handle2x(config, args):
     mean_pose, std_pose = get_meanpose(config)
 
     # get input
-    input1 = openpose2motion(args.vid1_json_dir, scale1)
-    input2 = openpose2motion(args.vid2_json_dir, scale2)
+    input1 = openpose2motion(args.vid1_json_dir, scale=scale1, max_frame=args.max_length)
+    input2 = openpose2motion(args.vid2_json_dir, scale=scale2, max_frame=args.max_length)
     input1 = preprocess_motion2d(input1, mean_pose, std_pose)
     input2 = preprocess_motion2d(input2, mean_pose, std_pose)
-    vlen1 = min(input1.shape[-1], args.max_length) // 8 * 8
-    vlen2 = min(input2.shape[-1], args.max_length) // 8 * 8
-    input1 = input1[:, :, :vlen1].to(config.device)
-    input2 = input2[:, :, :vlen2].to(config.device)
+    input1 = input1.to(config.device)
+    input2 = input2.to(config.device)
 
     # transfer by network
     out12 = net.transfer(input1, input2)
@@ -60,6 +58,7 @@ def handle2x(config, args):
                  out12=out12,
                  out21=out21)
         if args.render_video:
+            print("rendering videos...")
             motion2video(input1, h1, w1, os.path.join(save_dir, 'input1.mp4'), color1, args.transparency, fps=args.fps)
             motion2video(input2, h2, w2, os.path.join(save_dir,'input2.mp4'), color2, args.transparency, fps=args.fps)
             motion2video(out12, h2, w2, os.path.join(save_dir,'out12.mp4'), color2, args.transparency, fps=args.fps)
@@ -82,18 +81,15 @@ def handle3x(config, args):
     mean_pose, std_pose = get_meanpose(config)
 
     # get input
-    input1 = openpose2motion(args.vid1_json_dir, scale1)
-    input2 = openpose2motion(args.vid2_json_dir, scale2)
-    input3 = openpose2motion(args.vid3_json_dir, scale3)
+    input1 = openpose2motion(args.vid1_json_dir, scale=scale1, max_frame=args.max_length)
+    input2 = openpose2motion(args.vid2_json_dir, scale=scale2, max_frame=args.max_length)
+    input3 = openpose2motion(args.vid3_json_dir, scale=scale3, max_frame=args.max_length)
     input1 = preprocess_motion2d(input1, mean_pose, std_pose)
     input2 = preprocess_motion2d(input2, mean_pose, std_pose)
     input3 = preprocess_motion2d(input3, mean_pose, std_pose)
-    vlen1 = min(input1.shape[-1], args.max_length) // 8 * 8
-    vlen2 = min(input2.shape[-1], args.max_length) // 8 * 8
-    vlen3 = min(input3.shape[-1], args.max_length) // 8 * 8
-    input1 = input1[:, :, :vlen1].to(config.device)
-    input2 = input2[:, :, :vlen2].to(config.device)
-    input3 = input3[:, :, :vlen3].to(config.device)
+    input1 = input1.to(config.device)
+    input2 = input2.to(config.device)
+    input3 = input3.to(config.device)
 
     # transfer by network
     out = net.transfer_three(input1, input2, input3)
@@ -112,14 +108,16 @@ def handle3x(config, args):
         ensure_dir(save_dir)
         color1 = hex2rgb(args.color1)
         color2 = hex2rgb(args.color2)
+        color3 = hex2rgb(args.color3)
         np.savez(os.path.join(save_dir, 'results.npz'),
                  input1=input1,
                  input2=input2,
                  out=out)
         if args.render_video:
+            print("rendering videos...")
             motion2video(input1, h1, w1, os.path.join(save_dir,'input1.mp4'), color1, args.transparency, fps=args.fps)
             motion2video(input2, h2, w2, os.path.join(save_dir,'input2.mp4'), color2, args.transparency, fps=args.fps)
-            motion2video(input3, h3, w3, os.path.join(save_dir,'input3.mp4'), color2, args.transparency, fps=args.fps)
+            motion2video(input3, h3, w3, os.path.join(save_dir,'input3.mp4'), color3, args.transparency, fps=args.fps)
             motion2video(out, h2, w2, os.path.join(save_dir,'out.mp4'), color2, args.transparency, fps=args.fps)
 
 
@@ -142,6 +140,7 @@ def main():
     parser.add_argument('--fps', type=float, default=25, help="fps of output video")
     parser.add_argument('--color1', type=str, default='#a50b69#b73b87#db9dc3', help='color1')
     parser.add_argument('--color2', type=str, default='#4076e0#40a7e0#40d7e0', help='color2')
+    parser.add_argument('--color3', type=str, default='#ff8b06#ffb431#ffcd9d', help='color3')
     parser.add_argument('--disable_smooth', action='store_true',
                         help="disable gaussian kernel smoothing")
     parser.add_argument('--transparency', action='store_true',
