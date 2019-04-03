@@ -3,7 +3,7 @@
 We provide PyTorch implementation for our paper [_Learning Character-Agnostic Motion for Motion Retargeting in 2D_](http://xyz), SIGGRAPH 2019.
 
 <p align="center">
-  <img src='examples/images/interpolation.gif' align="right" width=451>
+  <img src='examples/images/interpolation.gif' width=451>
 </p>
 
 ## Prerequisites
