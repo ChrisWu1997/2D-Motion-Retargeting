@@ -58,7 +58,7 @@ def handle2x(config, args):
                  out12=out12,
                  out21=out21)
         if args.render_video:
-            print("rendering videos...")
+            print("Generating videos...")
             motion2video(input1, h1, w1, os.path.join(save_dir, 'input1.mp4'), color1, args.transparency,
                          fps=args.fps, save_frame=args.save_frame)
             motion2video(input2, h2, w2, os.path.join(save_dir,'input2.mp4'), color2, args.transparency,
@@ -67,6 +67,7 @@ def handle2x(config, args):
                          fps=args.fps, save_frame=args.save_frame)
             motion2video(out21, h1, w1, os.path.join(save_dir,'out21.mp4'), color1, args.transparency,
                          fps=args.fps, save_frame=args.save_frame)
+    print("Done.")
 
 
 def handle3x(config, args):
@@ -116,9 +117,10 @@ def handle3x(config, args):
         np.savez(os.path.join(save_dir, 'results.npz'),
                  input1=input1,
                  input2=input2,
+                 input3=input3,
                  out=out)
         if args.render_video:
-            print("rendering videos...")
+            print("Generating videos...")
             motion2video(input1, h1, w1, os.path.join(save_dir,'input1.mp4'), color1, args.transparency,
                          fps=args.fps, save_frame=args.save_frame)
             motion2video(input2, h2, w2, os.path.join(save_dir,'input2.mp4'), color2, args.transparency,
@@ -127,6 +129,8 @@ def handle3x(config, args):
                          fps=args.fps, save_frame=args.save_frame)
             motion2video(out, h2, w2, os.path.join(save_dir,'out.mp4'), color2, args.transparency,
                          fps=args.fps, save_frame=args.save_frame)
+
+    print("Done.")
 
 
 def main():
