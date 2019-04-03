@@ -50,7 +50,7 @@ We provide pretrained models and several video examples, along with their OpenPo
 - Run two encoder model to transfer motion and view angle between two input videos:
 
   ```
-  python predict.py -n view --model_path ./model/pretrained_view.pth -v1 ./examples/tall_man -v2 ./examples/model -h1 720 -w1 720 -h2 720 -w2 720 -o ./outputs/full-demo
+  python predict.py -n view --model_path ./model/pretrained_view.pth -v1 ./examples/tall_man -v2 ./examples/model -h1 720 -w1 720 -h2 720 -w2 720 -o ./outputs/view-demo
   ```
 
 
@@ -67,7 +67,7 @@ To run our models with your own videos, you first need to use [OpenPose](https:/
 
 - Download Mixamo Data
 
-  For the sake of convenience, we pack the Mixamo Data that we use. To download it, see [Google Drive]() or [Baidu Drive](). After downloading, please put it under `./mixamo_data`.
+  For the sake of convenience, we pack the Mixamo Data that we use. To download it, see [Google Drive](https://drive.google.com/open?id=1UGS-wFRzyLCReJcCN6rdVtRzKBjFa7t1) or [Baidu Drive](https://pan.baidu.com/s/1fYN4QYWOOQH9ZKOY5_2Upw) (8jq3). After downloading, please put it under `./mixamo_data`.
 
   > NOTE: Our Mixamo dataset only covers a part of the whole collections provided by the Mixamo website. If you want to collect Mixamo Data by yourself, you can follow the our guide [here](https://github.com/ChrisWu1997/2D-Motion-Retargeting/blob/master/dataset/Guide%20For%20Downloading%20Mixamo%20Data.md).
 
@@ -77,17 +77,21 @@ To run our models with your own videos, you first need to use [OpenPose](https:/
   python ./dataset/preprocess.py
   ```
 
-
-
 ### Train
 
-- Train the full model (with three encoders):
+- Train the full model (with three encoders) on GPU:
 
 ```
-python train.py -n full -g 1
+python train.py -n full -g 0
 ```
 
-(more info about arguments)
+Further more, you can select which structure to train and which loss to use through command line arguments:
+
+`-n` : Which structure to train. 'skeleton' / 'view' for 2 encoders system to transfer skeleton/view. 'full' for full system with 3 encoders.
+
+`—disable_triplet`: To disable triplet loss. By default, triplet loss is used.
+
+`—use_footvel_loss`: To use foot velocity loss.
 
 
 

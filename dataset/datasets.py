@@ -116,7 +116,7 @@ class MixamoDatasetForFull(_MixamoDatasetBase):
         item21 = self.build_item(mot2, char1)
 
         if self.aug:
-            param1 = self.gen_aug_param(rotate=False)   # FIXME: [np.random.uniform(0.5, 1.5)]
+            param1 = self.gen_aug_param(rotate=False)
             param2 = self.gen_aug_param(rotate=False)
         else:
             param1 = param2 = None
@@ -126,21 +126,27 @@ class MixamoDatasetForFull(_MixamoDatasetBase):
         target1 = input1.detach().clone()
         target2 = input2.detach().clone()
 
-        target112 = self.preprocessing(item1, view2, param1)
-        target121 = self.preprocessing(item12, view1, param2)
-        target122 = self.preprocessing(item12, view2, param2)
-        target221 = self.preprocessing(item2, view1, param2)
-        target212 = self.preprocessing(item21, view2, param1)
-        target211 = self.preprocessing(item21, view1, param1)
+        input112 = self.preprocessing(item1, view2, param1)
+        input121 = self.preprocessing(item12, view1, param2)
+        input122 = self.preprocessing(item12, view2, param2)
+        input221 = self.preprocessing(item2, view1, param2)
+        input212 = self.preprocessing(item21, view2, param1)
+        input211 = self.preprocessing(item21, view1, param1)
+        target112 = input112.detach().clone()
+        target121 = input121.detach().clone()
+        target122 = input122.detach().clone()
+        target221 = input221.detach().clone()
+        target212 = input212.detach().clone()
+        target211 = input211.detach().clone()
 
         return {"input1": input1, "target111": target1,
                 "input2": input2, "target222": target2,
-                "target112": target112,
-                "target121": target121,
-                "target122": target122,
-                "target221": target221,
-                "target212": target212,
-                "target211": target211,
+                "input112": input112, "target112": target112,
+                "input121": input121, "target121": target121,
+                "input122": input122, "target122": target122,
+                "input221": input221, "target221": target221,
+                "input212": input212, "target212": target212,
+                "input211": input211, "target211": target211,
                 "mot1": mot1, "mot2": mot2,
                 "view1": view1, "view2": view2,
                 "char1": char1, "char2": char2}

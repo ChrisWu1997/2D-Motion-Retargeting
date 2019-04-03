@@ -148,8 +148,10 @@ def rotation_matrix_along_axis(x, angle):
     return mat33_x
 
 
-def openpose2motion(json_dir, scale=1.0, smooth=True):
+def openpose2motion(json_dir, scale=1.0, smooth=True, max_frame=None):
     json_files = sorted(os.listdir(json_dir))
+    length = max_frame if max_frame is not None else len(json_files) // 8 * 8
+    json_files = json_files[:length]
     json_files = [os.path.join(json_dir, x) for x in json_files]
 
     motion = []
