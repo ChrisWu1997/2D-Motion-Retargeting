@@ -4,7 +4,7 @@ We provide PyTorch implementation for our paper _Learning Character-Agnostic Mot
 
 (put gifs here)
 
-Learning Character-Agnostic Motion for Motion Retargeting in 2D
+Learning Character-Agnostic Motion for Motion Retargeting in 2D,
 [Kfir Aberman](https://kfiraberman.github.io/), [Rundi Wu](https://ChrisWu1997.github.io/), [Dani Lischinski](http://danix3d.droppages.com/), [Baoquan Chen](http://www.cs.sdu.edu.cn/~baoquan/), [Daniel Cohen-Or](https://www.cs.tau.ac.il/~dcor/), SIGGRAPH 2019.
 
 ## Prerequisites
@@ -31,7 +31,7 @@ xxx
 
 ### Run demo examples
 
-We provide pretrained models and several video examples, along with their OpenPose outputs.
+We provide pretrained models and several video examples, along with their OpenPose outputs. After run, the results (final joint positions + videos) will be saved in the output folder.
 
 - Run the full model to combine motion, skeleton, view angle from three inputs video:
 
