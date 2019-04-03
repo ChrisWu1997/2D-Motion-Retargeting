@@ -1,11 +1,10 @@
 # Learning Character-Agnostic Motion for Motion Retargeting in 2D
 
-We provide PyTorch implementation for our paper _Learning Character-Agnostic Motion for Motion Retargeting in 2D_, SIGGRAPH 2019.
+We provide PyTorch implementation for our paper [_Learning Character-Agnostic Motion for Motion Retargeting in 2D_](http://xyz), SIGGRAPH 2019.
 
-<img src='examples/images/interpolation.gif' align="right" width=451>
-
-Learning Character-Agnostic Motion for Motion Retargeting in 2D,
-[Kfir Aberman](https://kfiraberman.github.io/), [Rundi Wu](https://ChrisWu1997.github.io/), [Dani Lischinski](http://danix3d.droppages.com/), [Baoquan Chen](http://www.cs.sdu.edu.cn/~baoquan/), [Daniel Cohen-Or](https://www.cs.tau.ac.il/~dcor/), SIGGRAPH 2019.
+<p align="center">
+  <img src='examples/images/interpolation.gif' align="right" width=451>
+</p>
 
 ## Prerequisites
 
