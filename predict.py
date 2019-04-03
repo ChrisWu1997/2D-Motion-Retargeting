@@ -59,10 +59,14 @@ def handle2x(config, args):
                  out21=out21)
         if args.render_video:
             print("rendering videos...")
-            motion2video(input1, h1, w1, os.path.join(save_dir, 'input1.mp4'), color1, args.transparency, fps=args.fps)
-            motion2video(input2, h2, w2, os.path.join(save_dir,'input2.mp4'), color2, args.transparency, fps=args.fps)
-            motion2video(out12, h2, w2, os.path.join(save_dir,'out12.mp4'), color2, args.transparency, fps=args.fps)
-            motion2video(out21, h1, w1, os.path.join(save_dir,'out21.mp4'), color1, args.transparency, fps=args.fps)
+            motion2video(input1, h1, w1, os.path.join(save_dir, 'input1.mp4'), color1, args.transparency,
+                         fps=args.fps, save_frame=args.save_frame)
+            motion2video(input2, h2, w2, os.path.join(save_dir,'input2.mp4'), color2, args.transparency,
+                         fps=args.fps, save_frame=args.save_frame)
+            motion2video(out12, h2, w2, os.path.join(save_dir,'out12.mp4'), color2, args.transparency,
+                         fps=args.fps, save_frame=args.save_frame)
+            motion2video(out21, h1, w1, os.path.join(save_dir,'out21.mp4'), color1, args.transparency,
+                         fps=args.fps, save_frame=args.save_frame)
 
 
 def handle3x(config, args):
@@ -115,10 +119,14 @@ def handle3x(config, args):
                  out=out)
         if args.render_video:
             print("rendering videos...")
-            motion2video(input1, h1, w1, os.path.join(save_dir,'input1.mp4'), color1, args.transparency, fps=args.fps)
-            motion2video(input2, h2, w2, os.path.join(save_dir,'input2.mp4'), color2, args.transparency, fps=args.fps)
-            motion2video(input3, h3, w3, os.path.join(save_dir,'input3.mp4'), color3, args.transparency, fps=args.fps)
-            motion2video(out, h2, w2, os.path.join(save_dir,'out.mp4'), color2, args.transparency, fps=args.fps)
+            motion2video(input1, h1, w1, os.path.join(save_dir,'input1.mp4'), color1, args.transparency,
+                         fps=args.fps, save_frame=args.save_frame)
+            motion2video(input2, h2, w2, os.path.join(save_dir,'input2.mp4'), color2, args.transparency,
+                         fps=args.fps, save_frame=args.save_frame)
+            motion2video(input3, h3, w3, os.path.join(save_dir,'input3.mp4'), color3, args.transparency,
+                         fps=args.fps, save_frame=args.save_frame)
+            motion2video(out, h2, w2, os.path.join(save_dir,'out.mp4'), color2, args.transparency,
+                         fps=args.fps, save_frame=args.save_frame)
 
 
 def main():
@@ -138,6 +146,7 @@ def main():
     parser.add_argument('-o', '--out_dir', type=str, default='./outputs', help="output saving directory")
     parser.add_argument('--render_video', type=bool, default=True, help="whether to save rendered video")
     parser.add_argument('--fps', type=float, default=25, help="fps of output video")
+    parser.add_argument('--save_frame', action='store_true', help="to save rendered video frames")
     parser.add_argument('--color1', type=str, default='#a50b69#b73b87#db9dc3', help='color1')
     parser.add_argument('--color2', type=str, default='#4076e0#40a7e0#40d7e0', help='color2')
     parser.add_argument('--color3', type=str, default='#ff8b06#ffb431#ffcd9d', help='color3')

@@ -6,6 +6,7 @@ import imageio
 from tqdm import tqdm
 from PIL import Image
 from functional.motion import normalize_motion_inv, trans_motion_inv
+from functional.utils import ensure_dir
 
 def interpolate_color(color1, color2, alpha):
     color_i = alpha * np.array(color1) + (1 - alpha) * np.array(color2)
@@ -131,12 +132,13 @@ def joints2image(joints_position, colors, transparency=False, H=512, W=512, nr_j
     return [canvas.astype(imtype), canvas_cropped.astype(imtype)]
 
 
-def motion2video(motion, h, w, save_path, colors, transparency=False, motion_tgt=None, fps=25):
+def motion2video(motion, h, w, save_path, colors, transparency=False, motion_tgt=None, fps=25, save_frame=False):
     nr_joints = motion.shape[0]
     videowriter = imageio.get_writer(save_path, fps=fps)
     vlen = motion.shape[-1]
-    # frames_dir = os.path.join(save_path)
-    # ensure_dir(frames_dir)
+    if save_frame:
+        frames_dir = save_path[:-4] + '-frames'
+        ensure_dir(frames_dir)
     for i in tqdm(range(vlen)):
         [img, img_cropped] = joints2image(motion[:, :, i], colors, transparency, H=h, W=w, nr_joints=nr_joints)
         if motion_tgt is not None:
@@ -146,7 +148,8 @@ def motion2video(motion, h, w, save_path, colors, transparency=False, motion_tgt
             img_cropped = cv2.addWeighted(img_tgt, 0.3, img_ori, 0.7, 0)
             bb = bounding_box(img_cropped)
             img_cropped = img_cropped[:, bb[2]:bb[3], :]
-        # save_image(img_cropped, os.path.join(frames_dir, "%04d.png" % i))
+        if save_frame:
+            save_image(img_cropped, os.path.join(frames_dir, "%04d.png" % i))
         videowriter.append_data(img)
     videowriter.close()
 
