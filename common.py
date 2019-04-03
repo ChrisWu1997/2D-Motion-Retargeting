@@ -9,7 +9,7 @@ class Config:
     device = None
 
     # data paths
-    data_dir = '/data1/wurundi/mixamo_release'  # FIXME : change it before final release
+    data_dir = './mixamo_data'
     meanpose_path = None
     stdpose_path = None
 

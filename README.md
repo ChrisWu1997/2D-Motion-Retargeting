@@ -8,7 +8,10 @@ We provide PyTorch implementation for our paper [_Learning Character-Agnostic Mo
 
 ## Prerequisites
 
-xxx
+- Linux
+- CPU or NVIDIA GPU + CUDA CuDNN
+- Python 3
+- PyTorch 0.4
 
 
 
@@ -19,12 +22,13 @@ xxx
 - Clone this repo
 
   ```
-  xxx
+  git clone https://github.com/ChrisWu1997/2D-Motion-Retargeting.git
+  cd 2D-Motion-Retargeting
   ```
 
 - Install dependencies
 
-  xxx
+  `pip install -r requirements.txt`
 
 
 
@@ -66,7 +70,7 @@ To run our models with your own videos, you first need to use [OpenPose](https:/
 
 - Download Mixamo Data
 
-  For the sake of convenience, we pack the Mixamo Data that we use. To download it, see [Google Drive](https://drive.google.com/open?id=1UGS-wFRzyLCReJcCN6rdVtRzKBjFa7t1) or [Baidu Drive](https://pan.baidu.com/s/1fYN4QYWOOQH9ZKOY5_2Upw) (8jq3). After downloading, please put it under `./mixamo_data`.
+  For the sake of convenience, we pack the Mixamo Data that we use. To download it, see [Google Drive](https://drive.google.com/open?id=1UGS-wFRzyLCReJcCN6rdVtRzKBjFa7t1) or [Baidu Drive](https://pan.baidu.com/s/1fYN4QYWOOQH9ZKOY5_2Upw) (8jq3). After downloading, extract it into `./mixamo_data`.
 
   > NOTE: Our Mixamo dataset only covers a part of the whole collections provided by the Mixamo website. If you want to collect Mixamo Data by yourself, you can follow the our guide [here](https://github.com/ChrisWu1997/2D-Motion-Retargeting/blob/master/dataset/Guide%20For%20Downloading%20Mixamo%20Data.md).
 
@@ -80,9 +84,9 @@ To run our models with your own videos, you first need to use [OpenPose](https:/
 
 - Train the full model (with three encoders) on GPU:
 
-```
-python train.py -n full -g 0
-```
+  ```
+  python train.py -n full -g 0
+  ```
 
 Further more, you can select which structure to train and which loss to use through command line arguments:
 
