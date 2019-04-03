@@ -1,10 +1,10 @@
 # Learning Character-Agnostic Motion for Motion Retargeting in 2D
 
-We provide PyTorch implementation for our paper _Learning Character-Agnostic Motion for Motion Retargeting in 2D_.
+We provide PyTorch implementation for our paper [_Learning Character-Agnostic Motion for Motion Retargeting in 2D_](http://xyz), SIGGRAPH 2019.
 
-(put gifs here)
-
-
+<p align="center">
+  <img src='examples/images/interpolation.gif' width=451>
+</p>
 
 ## Prerequisites
 
@@ -30,7 +30,7 @@ xxx
 
 ### Run demo examples
 
-We provide pretrained models and several video examples, along with their OpenPose outputs. 
+We provide pretrained models and several video examples, along with their OpenPose outputs. After run, the results (final joint positions + videos) will be saved in the output folder.
 
 - Run the full model to combine motion, skeleton, view angle from three inputs video:
 
@@ -40,13 +40,13 @@ We provide pretrained models and several video examples, along with their OpenPo
 
   Results will be saved in `./outputs/full-demo`.
 
-- Run the two encoder model to transfer motion and skeleton between two inputs video:
+- Run two encoder model to transfer motion and skeleton between two input videos:
 
   ```
   python predict.py -n skeleton --model_path ./model/pretrained_skeleton.pth -v1 ./examples/tall_man -v2 ./examples/midget -h1 720 -w1 720 -h2 720 -w2 720 -o ./outputs/skeleton-demo
   ```
 
-- Run the two encoder model to transfer motion and view angle between two inputs video:
+- Run two encoder model to transfer motion and view angle between two input videos:
 
   ```
   python predict.py -n view --model_path ./model/pretrained_view.pth -v1 ./examples/tall_man -v2 ./examples/model -h1 720 -w1 720 -h2 720 -w2 720 -o ./outputs/view-demo
@@ -54,9 +54,9 @@ We provide pretrained models and several video examples, along with their OpenPo
 
 
 
-### Run with your own video
+### Use your own videos
 
-To run our models with your own video, you need first to run [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) on it and then supply the resulting JSON directory as above.
+To run our models with your own videos, you first need to use [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) to extract the 2D joint positions from the video, then use the resulting JSON files as described in the demo examples.
 
 
 
@@ -95,5 +95,17 @@ Further more, you can select which structure to train and which loss to use thro
 
 
 ## Citation
+If you use this code for your research, please cite our paper:
+```
+@article{aberman2019learningl,
+  author = {Aberman, Kfir and Wu, Rundi and Lischinski, Dani and Chen, Baoquan and Cohen-Or, Daniel},
+  title = {Learning Character-Agnostic Motion for Motion Retargeting in 2D},
+  journal = {ACM Transactions on Graphics (TOG)},
+  volume = {xx},
+  number = {xx},
+  pages = {xx},
+  year = {2019},
+  publisher = {ACM}
+}
 
-xxx
+```
