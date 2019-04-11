@@ -56,7 +56,7 @@ class Config:
     visualize_frequency = 500
 
     def initialize(self, args):
-        self.name = args.name
+        self.name = args.name if hasattr(args, 'name') else 'full'
         self.use_triplet = not args.disable_triplet if hasattr(args, 'disable_triplet') else None
         self.use_footvel_loss = args.use_footvel_loss if hasattr(args, 'use_footvel_loss') else None
 

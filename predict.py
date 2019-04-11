@@ -137,7 +137,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-n', '--name', type=str, choices=['skeleton', 'view', 'full'], required=True,
                         help='which structure to use.')
-    parser.add_argument('--model_path', type=str, help="filepath for trained model weights")
+    parser.add_argument('--model_path', type=str, required=True, help="filepath for trained model weights")
     parser.add_argument('-v1', '--vid1_json_dir', type=str, help="video1's openpose json directory")
     parser.add_argument('-v2', '--vid2_json_dir', type=str, help="video2's openpose json directory")
     parser.add_argument('-v3', '--vid3_json_dir', type=str, help="video3's openpose json directory")
@@ -160,8 +160,6 @@ def main():
                         help="make background transparent in resulting frames")
     parser.add_argument('--max_length', type=int, default=120,
                         help='maximum input video length')
-    parser.add_argument('--use_tgt_vel', action='store_true',
-                        help="to use the target input's velocity(difference) for output results if set")
     parser.add_argument('-g', '--gpu_ids', type=int, default=0, required=False)
     args = parser.parse_args()
 
