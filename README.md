@@ -21,14 +21,16 @@ We provide PyTorch implementation for our paper [_Learning Character-Agnostic Mo
 
 - Clone this repo
 
-  ```
+  ```bash
   git clone https://github.com/ChrisWu1997/2D-Motion-Retargeting.git
   cd 2D-Motion-Retargeting
   ```
 
 - Install dependencies
 
-  `pip install -r requirements.txt`
+  ```bash
+  pip install -r requirements.txt
+  ```
 
 
 
@@ -36,24 +38,32 @@ We provide PyTorch implementation for our paper [_Learning Character-Agnostic Mo
 
 We provide pretrained models and several video examples, along with their OpenPose outputs. After run, the results (final joint positions + videos) will be saved in the output folder.
 
-- Run the full model to combine motion, skeleton, view angle from three inputs video:
+- Run the full model to combine motion, skeleton, view angle from three input videos:
 
-  ```
-  python predict.py -n full --model_path ./model/pretrained_full.pth -v1 ./examples/tall_man -v2 ./examples/midget -v3 ./examples/model -h1 720 -w1 720 -h2 720 -w2 720 -h3 720 -w3 720 -o ./outputs/full-demo
+  ```bash
+  python predict.py -n full --model_path ./model/pretrained_full.pth -v1 ./examples/tall_man -v2 ./examples/midget -v3 ./examples/workout_march -h1 720 -w1 720 -h2 720 -w2 720 -h3 720 -w3 720 -o ./outputs/full-demo --max_length 120
   ```
 
   Results will be saved in `./outputs/full-demo`.
 
+- Run the full model to do interpolation between two input videos. For example, to keep body attribute unchanged, and interpolate in motion and view axis:
+
+  ```bash
+  python interpolate.py --model_path ./model/pretrained_full.pth -v1 ./examples/model -v2 ./examples/tall_man -h1 720 -w1 720 -h2 720 -w2 720 -o ./outputs/interpolate-demo.mp4 --keep_attr body --form matrix --nr_sample 5 --max_length 120
+  ```
+
+  You will get a matrix of videos that demonstrates the interpolation results.
+
 - Run two encoder model to transfer motion and skeleton between two input videos:
 
-  ```
-  python predict.py -n skeleton --model_path ./model/pretrained_skeleton.pth -v1 ./examples/tall_man -v2 ./examples/midget -h1 720 -w1 720 -h2 720 -w2 720 -o ./outputs/skeleton-demo
+  ```bash
+  python predict.py -n skeleton --model_path ./model/pretrained_skeleton.pth -v1 ./examples/tall_man -v2 ./examples/midget -h1 720 -w1 720 -h2 720 -w2 720 -o ./outputs/skeleton-demo --max_length 120
   ```
 
 - Run two encoder model to transfer motion and view angle between two input videos:
 
-  ```
-  python predict.py -n view --model_path ./model/pretrained_view.pth -v1 ./examples/tall_man -v2 ./examples/model -h1 720 -w1 720 -h2 720 -w2 720 -o ./outputs/view-demo
+  ```bash
+  python predict.py -n view --model_path ./model/pretrained_view.pth -v1 ./examples/tall_man -v2 ./examples/model -h1 720 -w1 720 -h2 720 -w2 720 -o ./outputs/view-demo --max_length 120
   ```
 
 
@@ -88,13 +98,13 @@ To run our models with your own videos, you first need to use [OpenPose](https:/
   python train.py -n full -g 0
   ```
 
-Further more, you can select which structure to train and which loss to use through command line arguments:
+  Further more, you can select which structure to train and which loss to use through command line arguments:
 
-`-n` : Which structure to train. 'skeleton' / 'view' for 2 encoders system to transfer skeleton/view. 'full' for full system with 3 encoders.
+  `-n` : Which structure to train. 'skeleton' / 'view' for 2 encoders system to transfer skeleton/view. 'full' for full system with 3 encoders.
 
-`—disable_triplet`: To disable triplet loss. By default, triplet loss is used.
+  `—disable_triplet`: To disable triplet loss. By default, triplet loss is used.
 
-`—use_footvel_loss`: To use foot velocity loss.
+  `—use_footvel_loss`: To use foot velocity loss.
 
 
 
