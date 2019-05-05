@@ -2,9 +2,6 @@
 
 We provide PyTorch implementation for our paper [_Learning Character-Agnostic Motion for Motion Retargeting in 2D_](http://xyz), SIGGRAPH 2019.
 
-<p align="center">
-  <img src='examples/images/interpolation.gif' width=451>
-</p>
 
 ## Prerequisites
 
@@ -44,7 +41,12 @@ We provide pretrained models and several video examples, along with their OpenPo
   python predict.py -n full --model_path ./model/pretrained_full.pth -v1 ./examples/tall_man -v2 ./examples/midget -v3 ./examples/workout_march -h1 720 -w1 720 -h2 720 -w2 720 -h3 720 -w3 720 -o ./outputs/full-demo --max_length 120
   ```
 
-  Results will be saved in `./outputs/full-demo`.
+  Results will be saved in `./outputs/full-demo`:
+
+<p align="center">
+  <img src='examples/images/3_sources_white_BG.gif' width=500>
+</p>
+
 
 - Run the full model to do interpolation between two input videos. For example, to keep body attribute unchanged, and interpolate in motion and view axis:
 
@@ -52,7 +54,11 @@ We provide pretrained models and several video examples, along with their OpenPo
   python interpolate.py --model_path ./model/pretrained_full.pth -v1 ./examples/model -v2 ./examples/tall_man -h1 720 -w1 720 -h2 720 -w2 720 -o ./outputs/interpolate-demo.mp4 --keep_attr body --form matrix --nr_sample 5 --max_length 120
   ```
 
-  You will get a matrix of videos that demonstrates the interpolation results.
+  You will get a matrix of videos that demonstrates the interpolation results:
+
+<p align="center">
+  <img src='examples/images/interpolation_white_BG.gif' width=500>
+</p>
 
 - Run two encoder model to transfer motion and skeleton between two input videos:
 
@@ -65,7 +71,6 @@ We provide pretrained models and several video examples, along with their OpenPo
   ```bash
   python predict.py -n view --model_path ./model/pretrained_view.pth -v1 ./examples/tall_man -v2 ./examples/model -h1 720 -w1 720 -h2 720 -w2 720 -o ./outputs/view-demo --max_length 120
   ```
-
 
 
 ### Use your own videos
@@ -111,13 +116,13 @@ To run our models with your own videos, you first need to use [OpenPose](https:/
 ## Citation
 If you use this code for your research, please cite our paper:
 ```
-@article{aberman2019learningl,
+@article{aberman2019learning,
   author = {Aberman, Kfir and Wu, Rundi and Lischinski, Dani and Chen, Baoquan and Cohen-Or, Daniel},
   title = {Learning Character-Agnostic Motion for Motion Retargeting in 2D},
   journal = {ACM Transactions on Graphics (TOG)},
-  volume = {xx},
-  number = {xx},
-  pages = {xx},
+  volume = {38},
+  number = {4},
+  pages = {75},
   year = {2019},
   publisher = {ACM}
 }
