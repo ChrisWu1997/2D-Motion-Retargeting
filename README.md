@@ -38,7 +38,7 @@ We provide pretrained models and several video examples, along with their OpenPo
 - Run the full model to combine motion, skeleton, view angle from three input videos:
 
   ```bash
-  python predict.py -n full --model_path ./model/pretrained_full.pth -v1 ./examples/tall_man -v2 ./examples/midget -v3 ./examples/workout_march -h1 720 -w1 720 -h2 720 -w2 720 -h3 720 -w3 720 -o ./outputs/full-demo --max_length 120
+  python predict.py -n full --model_path ./model/pretrained_full.pth -v1 ./examples/tall_man -v2 ./examples/small_man -v3 ./examples/workout_march -h1 720 -w1 720 -h2 720 -w2 720 -h3 720 -w3 720 -o ./outputs/full-demo --max_length 120
   ```
 
   Results will be saved in `./outputs/full-demo`:
@@ -63,7 +63,7 @@ We provide pretrained models and several video examples, along with their OpenPo
 - Run two encoder model to transfer motion and skeleton between two input videos:
 
   ```bash
-  python predict.py -n skeleton --model_path ./model/pretrained_skeleton.pth -v1 ./examples/tall_man -v2 ./examples/midget -h1 720 -w1 720 -h2 720 -w2 720 -o ./outputs/skeleton-demo --max_length 120
+  python predict.py -n skeleton --model_path ./model/pretrained_skeleton.pth -v1 ./examples/tall_man -v2 ./examples/small_man -h1 720 -w1 720 -h2 720 -w2 720 -o ./outputs/skeleton-demo --max_length 120
   ```
 
 - Run two encoder model to transfer motion and view angle between two input videos:
