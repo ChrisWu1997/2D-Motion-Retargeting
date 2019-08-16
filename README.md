@@ -28,7 +28,7 @@ We provide PyTorch implementation for our paper [_Learning Character-Agnostic Mo
   ```bash
   pip install -r requirements.txt
   ```
-
+  Note that the `imageio` package requires `ffmepg` and there are several options to install `ffmepg`. For those who are using anaconda, run `conda install ffmpeg -c conda-forge` is the simplest way.
 
 
 ### Run demo examples
