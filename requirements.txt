@@ -1,7 +1,7 @@
 numpy==1.16.2
 scipy==1.1.0
 tensorboardX==1.2
-torch==0.4.1.post2
+torch==0.4.1
 tqdm==4.15.0
 imageio==2.3.0
 opencv-python==3.4.4.19
