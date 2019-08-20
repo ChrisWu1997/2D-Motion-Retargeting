@@ -99,6 +99,34 @@ class MixamoDatasetForFull(_MixamoDatasetBase):
     def __init__(self, phase, config):
         super(MixamoDatasetForFull, self).__init__(phase, config)
 
+    def get_cluster_data(self, nr_motions=50):
+        """
+        get a certain subset data for clustering visualization and scoring
+        :param nr_anims:
+        :return: pre-processed data of shape (nr_views, nr_anims, 30, 64)
+        """
+        motion_items = self.motion_names
+        if nr_motions < len(self.motion_names):
+            idxes = np.linspace(0, len(self.motion_names) - 1, nr_motions, dtype=int)
+            motion_items = [self.motion_names[i] for i in idxes]
+        motion_names = np.array([item[0] for item in motion_items])
+
+        all_data = []
+        for mot in motion_items:
+            char_data = []
+            for char in self.character_names:
+                item = self.build_item(mot, char)
+                view_data = []
+                for view in self.view_angles:
+                    data = self.preprocessing(item, view, None)
+                    view_data.append(data)
+                char_data.append(torch.stack(view_data, dim=0))
+            all_data.append(torch.stack(char_data, dim=0))
+        all_data = torch.stack(all_data, dim=0)
+
+        ret = (all_data, motion_names, self.character_names, np.rad2deg(self.view_angles))
+        return ret
+
     def __getitem__(self, index):
         # select two motions
         idx1, idx2 = np.random.choice(len(self.motion_names), size=2, replace=False)
