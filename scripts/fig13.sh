@@ -1,0 +1,1 @@
+python evaluate.py -n skeleton --model_path model/pretrained_skeleton.pth --path1 mixamo_data/test/SportyGranny/Magic-Spell-Casting/Magic-Spell-Casting.npy --path2 mixamo_data/test/Andromeda/Sword-Fight-One/Sword-Fight-One.npy -o outputs/fig13 
