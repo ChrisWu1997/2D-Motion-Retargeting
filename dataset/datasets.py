@@ -1,6 +1,7 @@
 from dataset.base_dataset import _MixamoDatasetBase
 import numpy as np
 from copy import copy
+import torch
 
 
 class MixamoDatasetForSkeleton(_MixamoDatasetBase):
