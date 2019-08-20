@@ -5,3 +5,7 @@ torch==0.4.1
 tqdm==4.15.0
 imageio==2.3.0
 opencv-python==3.4.4.19
+sklearn==0.0
+scikit-learn==0.21.3
+scipy==1.1.0
+matplotlib==3.1.1
