@@ -10,6 +10,13 @@ from functional.motion import preprocess_motion2d, postprocess_motion2d, openpos
 from functional.utils import ensure_dir, pad_to_height
 from common import config
 
+VIEW_ANGLES = [(0, 0, -np.pi / 2),
+               (0, 0, -np.pi / 3),
+               (0, 0, -np.pi / 6),
+               (0, 0, 0),
+               (0, 0, np.pi / 6),
+               (0, 0, np.pi / 3),
+               (0, 0, np.pi / 2)]
 
 def handle2x(config, args):
     w1 = h1 = w2 = h2 = 512
@@ -25,8 +32,10 @@ def handle2x(config, args):
 
     # get input
     dataloder = get_dataloader('test', config)
-    input1 = dataloder.dataset.preprocessing(args.path1, args.view1).unsqueeze(0)
-    input2 = dataloder.dataset.preprocessing(args.path2, args.view2).unsqueeze(0)
+    v1 = VIEW_ANGLES[args.view1] if args.view1 is not None else None
+    v2 = VIEW_ANGLES[args.view2] if args.view2 is not None else None
+    input1 = dataloder.dataset.preprocessing(args.path1, v1).unsqueeze(0)
+    input2 = dataloder.dataset.preprocessing(args.path2, v2).unsqueeze(0)
     input1 = input1.to(config.device)
     input2 = input2.to(config.device)
 
@@ -137,8 +146,8 @@ def main():
     parser.add_argument('--model_path', type=str, required=True, help="filepath for trained model weights")
     parser.add_argument('--path1', type=str)
     parser.add_argument('--path2', type=str)
-    parser.add_argument('--view1', type=str)
-    parser.add_argument('--view2', type=str)
+    parser.add_argument('--view1', type=int)
+    parser.add_argument('--view2', type=int)
     parser.add_argument('-o', '--out_dir', type=str, default='./outputs', help="output saving directory")
     parser.add_argument('--render_video', type=bool, default=True, help="whether to save rendered video")
     parser.add_argument('--fps', type=float, default=25, help="fps of output video")
