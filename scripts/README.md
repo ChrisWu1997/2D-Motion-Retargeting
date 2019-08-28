@@ -7,4 +7,8 @@ The following figs use the results that come from two source videos:
 >Fig 16(a): dancer-forward.mp4 + model-1-2.mp4  
 >Fig 16(b): workout-jumpingjack.mp4 + ballet_women_roll.mp4
 
-To reproduce the above figures from source videos, you need to first use [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) to extract the 2D joint positions and then run our model as suggested in the [README](https://github.com/ChrisWu1997/2D-Motion-Retargeting#run-demo-examples).
+To reproduce the above figures from source videos, you need to first use [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) to extract the 2D joint positions:
+```
+./build/examples/openpose/openpose.bin --video [your video path] --write_json output/ --display 0 --render_pose 0
+```
+and then run our model as suggested in the [README](https://github.com/ChrisWu1997/2D-Motion-Retargeting#run-demo-examples).
