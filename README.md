@@ -87,7 +87,7 @@ To run our models with your own videos, you first need to use [OpenPose](https:/
 
   For the sake of convenience, we pack the Mixamo Data that we use. To download it, see [Google Drive](https://drive.google.com/open?id=1UGS-wFRzyLCReJcCN6rdVtRzKBjFa7t1) or [Baidu Drive](https://pan.baidu.com/s/1fYN4QYWOOQH9ZKOY5_2Upw) (8jq3). After downloading, extract it into `./mixamo_data`.
 
-  > NOTE: Our Mixamo dataset only covers a part of the whole collections provided by the Mixamo website. If you want to collect Mixamo Data by yourself, you can follow the our guide [here](https://github.com/ChrisWu1997/2D-Motion-Retargeting/blob/master/dataset/Guide%20For%20Downloading%20Mixamo%20Data.md). The downloaded files are of `fbx` format, to convert it into `json`/`npy` (joints 3d position), you can use our script `dataset/fbx2joints3d.py`. 
+  > NOTE: Our Mixamo dataset only covers a part of the whole collections provided by the Mixamo website. If you want to collect Mixamo Data by yourself, you can follow the our guide [here](https://github.com/ChrisWu1997/2D-Motion-Retargeting/blob/master/dataset/Guide%20For%20Downloading%20Mixamo%20Data.md). The downloaded files are of `fbx` format, to convert it into `json`/`npy` (joints 3d position), you can use our script `dataset/fbx2joints3d.py`(requires blender 2.79).
 
 - Preprocess the downloaded data
 
